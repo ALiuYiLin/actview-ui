@@ -18,9 +18,11 @@ describe("Button（styles/base-aurora/ui/button.tsx 构建物）", () => {
     const btn = container.querySelector("button")!
     expect(btn.getAttribute("data-slot")).toBe("button")
     expect(btn.textContent).toContain("Hello")
-    // variant 类 bg-emerald-500 覆盖基类 bg-emerald-500/10（twMerge 去重）
-    expect(btn.className).toContain("bg-emerald-500")
-    expect(btn.className).not.toContain("bg-emerald-500/10")
+    // variant 类 bg-(--color-primary) 覆盖基类 bg-(--color-primary)/10（twMerge 去重）
+    // 颜色已主题变量化（路径③），运行时由 themes.json 注入切换
+    expect(btn.className).toContain("bg-(--color-primary)")
+    expect(btn.className).not.toContain("bg-(--color-primary)/10")
+    expect(btn.className).toContain("rounded-[var(--radius)]")
     // 基类与展开类不重复（inline-flex 只出现一次）
     const inlineCount = btn.className
       .split(" ")

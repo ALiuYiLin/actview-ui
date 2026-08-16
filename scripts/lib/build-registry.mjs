@@ -144,9 +144,21 @@ export async function buildSemanticRegistry(options = {}) {
   await writeFile(cssFile, css, "utf8")
   written.push("styles.css")
 
+  // 主题数据：色板 × light/dark 变量组 + radius 预设（路径③，运行时切换）
+  const themesSource = path.join(registryRoot, "themes.json")
+  const themesFile = path.join(outputDir, "themes.json")
+  await writeFile(themesFile, await readFile(themesSource, "utf8"), "utf8")
+  written.push("themes.json")
+
+  // 主题运行时注入函数模板（CLI 分发到用户项目 aliases.lib）
+  const themeTsSource = path.join(registryRoot, "lib", "theme.ts")
+  const themeTsFile = path.join(outputDir, "theme.ts")
+  await writeFile(themeTsFile, await readFile(themeTsSource, "utf8"), "utf8")
+  written.push("theme.ts")
+
   if (!silent) {
     console.log(
-      `✅ styles/semantic/  (${registry.items.length} items + styles.css)`
+      `✅ styles/semantic/  (${registry.items.length} items + styles.css + themes.json + theme.ts)`
     )
   }
   return written

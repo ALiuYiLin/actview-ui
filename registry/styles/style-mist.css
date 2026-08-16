@@ -1,72 +1,75 @@
-/* 作用域样式表：body 挂 style-mist class 时生效（自由切换机制，同 shadcn 文档站） */
+/* 作用域样式表：body 挂 style-mist class 时生效。
+   颜色全部引用主题变量（--color-*），圆角引用 --radius/--radius-md
+   （mist 形态：胶囊圆角 + 柔和阴影）。 */
 .style-mist {
-  /* Style: mist — 紫色胶囊柔和（@apply tailwind 形式） */
+  --radius: 9999px;
+  --radius-md: 9999px;
+
   .cn-button {
-    @apply inline-flex items-center justify-center gap-2.5 rounded-full border border-violet-500 bg-violet-50 font-medium transition-opacity duration-300;
+    @apply inline-flex items-center justify-center gap-2.5 rounded-[var(--radius)] border border-(--color-border) bg-(--color-muted) font-medium transition-opacity duration-300;
   }
-  
+
   .cn-button-variant-default {
-    @apply bg-violet-500 text-white shadow-lg shadow-violet-500/35;
+    @apply bg-(--color-primary) text-(--color-primary-foreground) shadow-lg shadow-(--color-primary)/35;
   }
-  
+
   .cn-button-variant-outline {
-    @apply bg-transparent text-violet-500;
+    @apply bg-transparent text-(--color-primary);
   }
-  
+
   .cn-button-variant-secondary {
-    @apply bg-violet-100 text-violet-900;
+    @apply bg-(--color-secondary) text-(--color-secondary-foreground);
   }
-  
+
   .cn-button-variant-ghost {
-    @apply bg-transparent text-violet-900;
+    @apply bg-transparent text-(--color-muted-foreground);
   }
-  
+
   .cn-button-variant-destructive {
-    @apply bg-rose-500 text-white;
+    @apply bg-(--color-destructive) text-(--color-destructive-foreground);
   }
-  
+
   .cn-button-variant-link {
-    @apply bg-transparent text-violet-500 underline decoration-wavy;
+    @apply bg-transparent text-(--color-primary) underline decoration-wavy;
   }
-  
+
   .cn-button-size-default {
     @apply h-10 px-5 text-sm;
   }
-  
+
   .cn-button-size-sm {
     @apply h-[30px] px-3.5 text-xs;
   }
-  
+
   .cn-button-size-lg {
     @apply h-12 px-7 text-base;
   }
-  
+
   .cn-button-size-icon {
     @apply size-10 p-0;
   }
-  
+
   .cn-button-group {
-    @apply inline-flex overflow-hidden rounded-full border border-violet-500 bg-violet-50;
+    @apply inline-flex overflow-hidden rounded-[var(--radius)] border border-(--color-border) bg-(--color-muted);
   }
-  
+
   .cn-button-group-orientation-horizontal {
     @apply flex-row;
   }
-  
+
   .cn-button-group-orientation-vertical {
     @apply gap-1;
   }
-  
+
   .cn-button-group-text {
-    @apply px-3.5 text-sm text-violet-900;
+    @apply px-3.5 text-sm text-(--color-muted-foreground);
   }
-  
+
   .cn-button-group-separator {
-    @apply bg-violet-500;
+    @apply bg-(--color-border);
   }
-  
+
   .cn-separator {
-    @apply bg-violet-500;
+    @apply bg-(--color-border);
   }
-  
 }

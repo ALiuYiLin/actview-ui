@@ -63,11 +63,16 @@ describe("路径②：语义类自由切换", () => {
     const output = compiler.build([])
 
     // 三套作用域规则都存在，@apply 已展开为标准 CSS 声明
+    // （v4 输出保留嵌套形式：.style-<name> { .cn-button { ... } }）
     for (const name of ["aurora", "ember", "mist"]) {
-      expect(output).toContain(`.style-${name} .cn-button`)
+      expect(output).toContain(`.style-${name}`)
     }
+    expect(output).toContain(".cn-button")
     expect(output).toContain("border-radius")
     expect(output).toContain("display: inline-flex")
+    // 颜色全部主题变量化（路径③：运行时由 themes.json 注入切换）
+    expect(output).toContain("var(--color-primary)")
+    expect(output).toContain("var(--radius)")
   })
 
   it("组件保留 cn-* 语义类，body class 切换 computed 样式实时生效", async () => {

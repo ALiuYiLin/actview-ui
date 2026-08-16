@@ -17,14 +17,21 @@ afterEach(async () => {
 })
 
 describe("CLI init", () => {
-  it("写 components.json + utils，style 与 iconLibrary 生效", async () => {
+  it("写 components.json + utils + 主题文件（themes.json/theme.ts）", async () => {
     await runInitCommand({ cwd: dir, style: "base-ember" })
     const cfg = JSON.parse(
       await readFile(path.join(dir, "components.json"), "utf8")
     )
     expect(cfg.style).toBe("base-ember")
     expect(cfg.iconLibrary).toBe("lucide")
+    // 主题参数（路径③）写入配置
+    expect(cfg.baseColor).toBe("emerald")
+    expect(cfg.theme).toBe("light")
+    expect(cfg.radius).toBe("default")
     await access(path.join(dir, "lib", "utils.ts"))
+    // 主题数据 + 运行时注入函数落盘
+    await access(path.join(dir, "styles", "themes.json"))
+    await access(path.join(dir, "lib", "theme.ts"))
   })
 
   it("已有配置无 --yes 时拒绝覆盖", async () => {

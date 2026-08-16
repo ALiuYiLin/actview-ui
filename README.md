@@ -40,16 +40,29 @@ registry/bases/base/registry.json（item 清单 + registryDependencies + 框架�
 
 ## 三条路径（对应 shadcn 的完整机制）
 
-| 路径 | 组件形态 | 样式来源 | 能否运行时切 style |
+| 路径 | 组件形态 | 样式来源 | 能否运行时切 |
 |---|---|---|---|
 | ① CLI add | `cn-*` 已展开写死 | 组件 className 内联 | ❌（换 style = 重新 add） |
-| ② semantic（`--semantic`） | `cn-*` **语义类保留** | 作用域样式表（`.style-<name>` + body class） | ✅ 换 body class 即切换 |
-| ③ cssVars | ①产物 | 运行时 CSS 变量 | ⚠️ 仅颜色/圆角/暗色 |
+| ② semantic（`--semantic`） | `cn-*` **语义类保留** | 作用域样式表（`.style-<name>` + body class） | ✅ 换 body class 切 style（形态） |
+| ③ 主题变量（themes.json） | ①②的 className 引用 `var(--color-*)`/`var(--radius)` | 运行时注入 `:root`/`.dark`/`body.radius-*` | ✅ 色板/明暗/圆角自由切换 |
 
 路径②复刻 shadcn 文档站/create 页机制：style css 以 `.style-<name>` 作用域
 嵌套包装，组件保留 `cn-*`，切换 = `<body class="style-aurora">` 换 class，
 组件树零重挂载。CLI 语义模式还会把 icon-placeholder 组件随依赖落盘
 （不跑 transform-icons）。
+
+路径③复刻 shadcn cssVars 机制，四维正交切换：
+
+```
+<body class="style-aurora dark radius-full">   ← style（形态）× theme（明暗）× radius（圆角）
+applyTheme(themes, { color: "red" })           ← 色板（运行时注入变量值）
+```
+
+- `registry/bases/base/themes.json`：3 色板 × light/dark 变量组 + radius 预设
+- `registry/bases/base/lib/theme.ts`：`buildThemeCssText`/`applyTheme` 运行时
+  注入函数（CLI 落盘到用户项目 `aliases.lib/theme.ts`）
+- style css 的颜色全部引用 `--color-*`，圆角引用 `--radius`/`--radius-md`
+  （style 作用域内定义默认值，保留三套形态差异；主题参数可覆盖）
 
 ## 第二段：注册表产物 → 用户本地（安装侧，CLI）
 
@@ -151,7 +164,7 @@ test/
   函数会以裸函数进运行时）
 
 ```bash
-pnpm test                # vitest run（45 个用例）
+pnpm test                # vitest run（49 个用例）
 pnpm run test:watch      # watch 模式
 ```
 

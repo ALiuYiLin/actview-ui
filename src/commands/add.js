@@ -23,6 +23,8 @@ import {
   resolveRegistryTree,
   STYLES_DIR,
   BASE_UTILS_FILE,
+  THEMES_FILE,
+  THEME_TS_FILE,
 } from "../lib/registry.js"
 import {
   resolveFilePath,
@@ -141,6 +143,21 @@ export async function runAddCommand(args) {
       await mkdir(path.dirname(utilsTarget), { recursive: true })
       await writeFile(utilsTarget, utilsSource, "utf8")
       console.log(`│ utils 缺失，已补装: ${path.relative(cwd, utilsTarget).split(path.sep).join("/")}`)
+    }
+
+    // 主题数据与运行时函数缺失则补装（路径③）
+    const themesTarget = path.join(cwd, "styles", "themes.json")
+    if (!(await fileExists(themesTarget))) {
+      await mkdir(path.dirname(themesTarget), { recursive: true })
+      await writeFile(themesTarget, await readFile(THEMES_FILE, "utf8"), "utf8")
+    }
+    const themeTsTarget = path.join(
+      aliasToLocalDir(config.aliases.lib, cwd),
+      "theme.ts"
+    )
+    if (!(await fileExists(themeTsTarget))) {
+      await mkdir(path.dirname(themeTsTarget), { recursive: true })
+      await writeFile(themeTsTarget, await readFile(THEME_TS_FILE, "utf8"), "utf8")
     }
   }
 

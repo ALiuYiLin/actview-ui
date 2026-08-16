@@ -27,6 +27,22 @@ export const BASE_UTILS_FILE = path.join(
   "lib",
   "utils.ts"
 )
+// 主题数据（色板 × light/dark + radius）与运行时注入函数模板
+export const THEMES_FILE = path.join(
+  PACKAGE_ROOT,
+  "registry",
+  "bases",
+  "base",
+  "themes.json"
+)
+export const THEME_TS_FILE = path.join(
+  PACKAGE_ROOT,
+  "registry",
+  "bases",
+  "base",
+  "lib",
+  "theme.ts"
+)
 
 export async function loadRegistry() {
   return JSON.parse(await readFile(REGISTRY_FILE, "utf8"))

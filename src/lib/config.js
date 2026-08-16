@@ -12,6 +12,10 @@ export const DEFAULT_CONFIG = {
   style: "base-aurora",
   tsx: true,
   iconLibrary: "lucide",
+  // 主题（路径③）：色板 / 明暗 / 圆角 —— 运行时自由切换
+  baseColor: "emerald",
+  theme: "light",
+  radius: "default",
   aliases: {
     components: "@/components",
     utils: "@/lib/utils",
