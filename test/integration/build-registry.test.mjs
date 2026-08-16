@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import {
+  ALLOWLIST,
   buildRegistry,
   buildSemanticRegistry,
 } from "../../scripts/lib/build-registry.mjs"
@@ -16,13 +17,30 @@ const STYLES_ROOT = path.join(
 )
 
 describe("buildRegistry（路径①：展开产物）", () => {
-  it("产物 18 文件（3 style × 6 items）、无 cn-* 残留、展开产物三套一致", async () => {
+  it("产物 = 3 style × registry items、无 cn-* 残留（白名单除外）、展开产物三套一致", async () => {
     const written = await buildRegistry({ silent: true })
-    expect(written).toHaveLength(18)
+    const registry = JSON.parse(
+      await readFile(
+        path.join(
+          path.dirname(fileURLToPath(import.meta.url)),
+          "..",
+          "..",
+          "registry",
+          "bases",
+          "base",
+          "registry.json"
+        ),
+        "utf8"
+      )
+    )
+    expect(written).toHaveLength(registry.items.length * 3)
 
     for (const file of written) {
       const content = await readFile(path.join(STYLES_ROOT, file), "utf8")
-      expect(content).not.toMatch(/\bcn-[a-z0-9-]+\b/)
+      const residue = (content.match(/\bcn-[a-z0-9-]+\b/g) ?? []).filter(
+        (token) => !ALLOWLIST.has(token)
+      )
+      expect(residue).toEqual([])
     }
 
     // token 全量同步后（docs/MIGRATION.md §3.8：3 套 style 共用 luma token 体），

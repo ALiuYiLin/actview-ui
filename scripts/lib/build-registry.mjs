@@ -15,6 +15,16 @@ const DEFAULT_ROOT = path.resolve(
 
 const CN_TOKEN_RE = /\bcn-[a-z0-9-]+\b/g
 
+// 与源 packages/shadcn/src/styles/transform-style-map.ts 的 ALLOWLIST 对齐：
+// 这些 cn-* 类作为 CSS 选择器/应用级 token（CLI 安装时处理），展开构建保留原样。
+export const ALLOWLIST = new Set([
+  "cn-menu-target",
+  "cn-menu-translucent",
+  "cn-logical-sides",
+  "cn-rtl-flip",
+  "cn-font-heading",
+])
+
 // ---------------------------------------------------------------------------
 // ① createStyleMap：解析 style CSS，提取每个 .cn-* 规则块内 @apply 指令的值。
 //    （对应原版 extractTailwindClasses：收集块内所有 @apply 的参数）
@@ -59,13 +69,12 @@ export function createStyleMap(css) {
 // ---------------------------------------------------------------------------
 export function transformStyleMap(source, styleMap) {
   return source.replace(CN_TOKEN_RE, (token) => {
+    // 白名单：作为 CSS 选择器/应用级 token，保留原样（CLI 安装时处理）
+    if (ALLOWLIST.has(token)) return token
     const replacement = styleMap[token]
-    if (replacement === undefined) {
-      throw new Error(
-        `Style 未定义占位符 "${token}"（base 引用了它，但 style CSS 中没有 .${token} 规则）`
-      )
-    }
-    return replacement
+    // 未定义的非白名单 token：与源 transform-style-map 一致——移除
+    // （这类 token 的样式已内联在组件类字符串里，仅作语义标记）
+    return replacement ?? ""
   })
 }
 
@@ -82,6 +91,10 @@ export function rewriteRegistryImports(source, outputStyleName) {
       "@/app/(create)/components/icon-placeholder",
       `@/styles/${outputStyleName}/components/icon-placeholder`
     )
+    .replaceAll(
+      "@/registry/bases/base/components/icon-placeholder",
+      `@/styles/${outputStyleName}/components/icon-placeholder`
+    )
     .replaceAll("@/registry/bases/base/lib/utils", "@/lib/utils")
     .replaceAll("@/registry/bases/base/", "@/")
 }
@@ -90,7 +103,9 @@ export function rewriteRegistryImports(source, outputStyleName) {
 // 验证：产物字符串必须与 style 定义"对应上"（无残留占位符）
 // ---------------------------------------------------------------------------
 export function verifyTokens(fileLabel, output) {
-  const leftovers = output.match(CN_TOKEN_RE) ?? []
+  const leftovers = (output.match(CN_TOKEN_RE) ?? []).filter(
+    (token) => !ALLOWLIST.has(token)
+  )
   if (leftovers.length > 0) {
     throw new Error(
       `[${fileLabel}] 产物中残留未替换占位符: ${leftovers.join(", ")}`

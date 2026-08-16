@@ -186,13 +186,17 @@ DOM 结构保持一致是本迁移的硬约束，逐组件锁定以下细节：
 
 > **已落地（M0 实施记录）**：spike 用例 `test/spike/actview-capabilities.test.tsx`（9 用例，见 §8 结论）；`packages/base-ui` 骨架 + button/separator/tooltip 三个原语（workspace 链接，`pnpm-workspace.yaml` packages + 根 package.json `workspace:*`）；React 参考 harness（`test/fixtures/react-reference/`，vitest + happy-dom 内跑 React 19 + Base UI 1.6.0，独立配置 `vitest.react.config.ts` / `pnpm test:react-ref`）；token 同步脚本 `scripts/sync-style-tokens.mjs`（421 token 已同步，canonical = style-luma）；golden 采集/对比以 vitest 形式落地（`test/fixtures/react-reference/tests/golden-capture.test.tsx` 采集 → `test/fixtures/golden/*.html` 入库；`test/golden/golden-diff.test.tsx` 对比）。**首对 golden（button×3 + tooltip×2）5/5 逐字节一致。**
 >
-> M0 发现的框架层事实（已写入 §8 风险表与组件规范）：
+> M0/M1 发现的框架层事实（已写入 §8 风险表与组件规范）：
 > - **props 合成必须用 computed**（或 JSX 内实时求值）：setup 只跑一次，mergeProps/mergeClassName 在 setup 体构造会快照过期；`computed(() => mergeProps(...))` 惰性追踪是标准解法（用户指定）。
 > - **最终 return 必须是 JSX（或条件 JSX/jsx 调用）**：defineComponentPlugin 只包装这种形态；`return () => {}` 不被识别（组件会以裸函数进入运行时）。
+> - **useProps 派生的对象/数组值引用不稳定**：每次 `.value` 访问返回新包装（spike 实证），身份比较（`===`/`!==`）恒为真 → 受控同步死循环。跨访问比较一律用 `sameValue`（packages/base-ui/src/internals/compare.ts）。原语受控同步（toggle-group/radio-group）已按此修复，带回归测试。
+> - **aria-* 布尔 false 会被 actview 移除属性**（React 渲染 `aria-pressed="false"` 字符串）→ 所有 aria 布尔值 String() 化（aria-pressed/aria-checked/aria-disabled 已修）。
+> - **具名插槽 API**：`<template slot="x">` 被插件提取为 `slots={{ x: () => <fragment>... }}` prop（函数形态，支持作用域参数裸属性）；插槽是纯内容投影，**不能替代 render prop 的 props 合并语义**（Base UI useRender 需要把原语 props 合进目标元素），且改插槽会破坏与源文件的结构对齐。render prop + mergeRenderProps 路径经回归测试验证响应性无损失（test/base-ui/render-prop-reactivity.test.tsx，4/4）。
 > - `<Fragment>`/`<>` JSX 语法过不了 @actview/jsx 的 TS 类型（ElementType 不含 symbol）→ 用 `jsx(Fragment, { children })` 显式调用。
 > - 源 token 依赖 tw-animate-css（animate-in/fade-out 等）与自定义 @utility（no-scrollbar、animate-caret-blink）→ semantic styles.css 已带 `@import "tw-animate-css"`，自定义 utility 需随分发 base css 提供（见 M1 变量对齐任务）。
 > - v4 变量形态：`@theme inline` 桥接 `--color-*: var(--*)`，编译产物引用 `var(--primary)` 等原始名 → **M1 任务：themes.json/theme.ts 从 --color-* 改为原始变量名对齐 v4**（§3.8）。
 > - golden 归一化已覆盖：Base UI id 形态 `base-ui-_r_3_`/`_r_4_`、React 19 useId `«rN»`、浮层定位数值（left/top/transform）、测试容器 id。
+> - transformStyleMap 语义对齐源 shadcn：未定义 token 移除（非抛错）+ ALLOWLIST（cn-menu-target/cn-menu-translucent/cn-logical-sides/cn-rtl-flip/cn-font-heading）保留；verifyTokens 过滤白名单。
 
 1. ~~**spike 验证 actview 能力边界**（半天，写 `test/spike/` 一次性用例）~~ ✅ 已落地
 2. ~~**建 `@actview/base-ui` 包骨架**（本仓库 `packages/base-ui`）+ 首批 3 个原语（button / separator / tooltip，作为标准实现范本）+ workspace 接入~~ ✅ 已落地

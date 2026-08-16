@@ -1,8 +1,7 @@
 // freeze-react-reference：从源仓库增量冻结组件副本到 React 参考 harness，
 // 并更新 MANIFEST.json 的 frozenFiles 清单（docs/MIGRATION.md §5.1.3）。
-// 用法：
-//   node scripts/freeze-react-reference.mjs <源相对路径...>
-//   例：node scripts/freeze-react-reference.mjs apps/v4/registry/bases/base/ui/card.tsx
+// 用法（相对路径以源 base 目录为基准）：
+//   node scripts/freeze-react-reference.mjs ui/card.tsx ui/card-group.tsx lib/utils.ts
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
@@ -30,8 +29,8 @@ const MANIFEST = path.join(
 
 const rels = process.argv.slice(2)
 if (rels.length === 0) {
-  console.error("用法：node scripts/freeze-react-reference.mjs <源相对路径...>")
-  console.error(`  相对路径以 ${path.join("apps", "v4", "registry", "bases", "base")} 为基准`)
+  console.error("用法：node scripts/freeze-react-reference.mjs <相对路径...>")
+  console.error(`  相对路径以源 base 目录（${BASE_SRC}）为基准，如 ui/card.tsx`)
   process.exit(1)
 }
 

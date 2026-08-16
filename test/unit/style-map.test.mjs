@@ -39,10 +39,13 @@ describe("transformStyleMap", () => {
     expect(transformStyleMap(source, map)).toBe('cva("base-cls solid-cls")')
   })
 
-  it("style 未定义 token 时抛错", () => {
-    expect(() => transformStyleMap('"cn-missing"', {})).toThrow(
-      /未定义占位符 "cn-missing"/
-    )
+  it("未定义 token：与源 transform-style-map 一致——移除；白名单保留", () => {
+    // 语义对齐源 shadcn（build-registry.mjs ALLOWLIST）：
+    //   非白名单未定义 token → 移除（样式已内联在组件类字符串里）
+    //   白名单（CSS 选择器/应用级 token）→ 保留原样
+    expect(transformStyleMap('"cn-missing"', {})).toBe('""')
+    expect(transformStyleMap('"cn-font-heading"', {})).toBe('"cn-font-heading"')
+    expect(transformStyleMap('"cn-rtl-flip"', {})).toBe('"cn-rtl-flip"')
   })
 })
 

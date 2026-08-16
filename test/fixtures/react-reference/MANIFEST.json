@@ -6,9 +6,78 @@
   "baseUiVersion": "1.6.0",
   "reactVersion": "19.2.3",
   "frozenFiles": [
-    { "from": "apps/v4/registry/bases/base/ui/button.tsx", "to": "src/registry/bases/base/ui/button.tsx" },
-    { "from": "apps/v4/registry/bases/base/ui/tooltip.tsx", "to": "src/registry/bases/base/ui/tooltip.tsx" },
-    { "from": "apps/v4/registry/bases/base/lib/utils.ts", "to": "src/registry/bases/base/lib/utils.ts" }
+    {
+      "from": "apps/v4/registry/bases/base/ui/button.tsx",
+      "to": "src/registry/bases/base/ui/button.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/tooltip.tsx",
+      "to": "src/registry/bases/base/ui/tooltip.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/lib/utils.ts",
+      "to": "src/registry/bases/base/lib/utils.ts"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/alert.tsx",
+      "to": "src/registry/bases/base/ui/alert.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/aspect-ratio.tsx",
+      "to": "src/registry/bases/base/ui/aspect-ratio.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/card.tsx",
+      "to": "src/registry/bases/base/ui/card.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/empty.tsx",
+      "to": "src/registry/bases/base/ui/empty.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/field.tsx",
+      "to": "src/registry/bases/base/ui/field.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/kbd.tsx",
+      "to": "src/registry/bases/base/ui/kbd.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/label.tsx",
+      "to": "src/registry/bases/base/ui/label.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/message.tsx",
+      "to": "src/registry/bases/base/ui/message.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/native-select.tsx",
+      "to": "src/registry/bases/base/ui/native-select.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/pagination.tsx",
+      "to": "src/registry/bases/base/ui/pagination.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/skeleton.tsx",
+      "to": "src/registry/bases/base/ui/skeleton.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/spinner.tsx",
+      "to": "src/registry/bases/base/ui/spinner.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/table.tsx",
+      "to": "src/registry/bases/base/ui/table.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/textarea.tsx",
+      "to": "src/registry/bases/base/ui/textarea.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/separator.tsx",
+      "to": "src/registry/bases/base/ui/separator.tsx"
+    }
   ],
   "notes": [
     "冻结文件不做手改；随迁移进度用 scripts/freeze-react-reference.mjs 增量冻结并更新本清单",

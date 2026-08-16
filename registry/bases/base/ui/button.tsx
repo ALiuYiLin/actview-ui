@@ -42,7 +42,13 @@ const buttonVariants = cva(
 )
 
 function Button(
-  props: ButtonHTMLAttributes & VariantProps<typeof buttonVariants>
+  props: ButtonHTMLAttributes &
+    VariantProps<typeof buttonVariants> & {
+      disabled?: boolean
+      focusableWhenDisabled?: boolean
+      nativeButton?: boolean
+      render?: any
+    }
 ) {
   const {
     variant,

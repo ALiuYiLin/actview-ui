@@ -4,6 +4,7 @@
 //     height/margin/translate/--transform-origin/--anchor-* 等）值替换为 {v}
 //     —— floating-ui 的布局计算值不参与结构对比
 //   - 生成 id 归一化：testing-N → {root}；React 19 useId «rN» / Base UI :rN: → {id}
+//   - class：仅移除 @actview/lucide 的内部标记类 "lucide-icon"（顺序原样保留）
 //   - 文本原样输出（HTML 转义）；注释节点忽略
 const VOID_TAGS = new Set([
   "area", "base", "br", "col", "embed", "hr", "img", "input",
@@ -50,8 +51,18 @@ function normalizeStyleValue(value: string): string {
   return decls.map(([p, v]) => `${p}: ${v};`).join(" ")
 }
 
+function normalizeClassValue(value: string): string {
+  // @actview/lucide 的 Icon 会额外输出 "lucide-icon" 内部标记类（lucide-react 没有），
+  // 属框架内部类而非语义 DOM 契约，归一化移除（两侧同源，只影响 actview 侧）。
+  return value
+    .split(/\s+/)
+    .filter((c) => c !== "lucide-icon")
+    .join(" ")
+}
+
 function normalizeAttrValue(name: string, value: string): string {
   if (name === "style") return normalizeStyleValue(value)
+  if (name === "class") return normalizeClassValue(value)
   if (name === "id") return normalizeId(value)
   // aria-labelledby/aria-describedby 等引用生成 id 的属性值
   if (value.includes("«r") || value.includes(":r")) {
