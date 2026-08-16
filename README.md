@@ -108,6 +108,38 @@ user-project/                 # 演示用"用户项目"（独立工程：actview
 | `transformIcons()` | `packages/shadcn/src/utils/transformers/transform-icons.ts`（IconPlaceholder → 图标库组件 + import 注入；actview 生态目标库为 @actview/lucide） |
 | 内容相同则 skip | `update-files.ts` 的 `isContentSame` 逻辑 |
 
+## 测试系统
+
+三层结构，**不依赖 user-project**（它只作 example/人工验证）：
+
+```
+test/
+├── unit/         # L1 纯函数（vitest, node）：createStyleMap/transformStyleMap、
+│                 #   resolveRegistryTree（拓扑/环/缺依赖）、transformImports/
+│                 #   transformIcons/resolveFilePath
+├── component/    # L2 组件行为（vitest + happy-dom + @actview/testing）：
+│                 #   直接渲染 styles 构建物，断言 class 合并/变体/事件/lucide 图标
+└── integration/  # L3 流水线（临时目录）：buildRegistry 产物断言 +
+                  #   runInitCommand/runAddCommand 落盘断言
+```
+
+关键实现点：
+
+- **vitest 挂 `actviewPlugin()`**（`vitest.config.ts`）：测试与被测 TSX 经 Babel
+  defineComponent 转换（同 actview 主仓库做法）
+- **组件必须用 `defineComponent` + render 内解构 props**：简写函数组件经插件转换后
+  函数体内的 props 解构是 setup 一次性快照，children/事件更新不会进入 render；
+  render 内每次解构才是 actview 的正确写法（@actview/lucide 同款）
+- **避免 `new URL(..., import.meta.url)`**：vite/vitest 会把它当静态资产转换破坏
+  file: scheme；资源定位统一用 `fileURLToPath + path`
+- L2 传给 `render()` 的组件必须是**函数声明**（插件只转换声明/赋值形态，内联箭头
+  函数会以裸函数进运行时）
+
+```bash
+npm test                 # vitest run（39 个用例）
+npm run test:watch       # watch 模式
+```
+
 ## 运行
 
 ```bash

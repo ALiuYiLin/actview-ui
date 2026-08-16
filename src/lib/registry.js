@@ -1,17 +1,31 @@
 // 注册表加载与依赖树解析（复刻 packages/shadcn/src/registry/loader.ts + resolver.ts 的最小版）
 import { readFile } from "node:fs/promises"
+import path from "node:path"
 import { fileURLToPath } from "node:url"
 
-// 包内资源定位（CLI 自身的 registry 与 styles 产物随包分发）
-const PACKAGE_ROOT = fileURLToPath(new URL("../../", import.meta.url))
-export const REGISTRY_FILE = new URL(
-  "../../registry/bases/base/registry.json",
-  import.meta.url
+// 包内资源定位（CLI 自身的 registry 与 styles 产物随包分发）。
+// 注意：避免 new URL(..., import.meta.url) —— vite/vitest 会把它当静态资产
+// 转换并破坏 file: scheme；用 fileURLToPath + path 拼接。
+const PACKAGE_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  ".."
 )
-export const STYLES_ROOT = new URL("../../styles/", import.meta.url)
-export const BASE_UTILS_FILE = new URL(
-  "../../registry/bases/base/lib/utils.ts",
-  import.meta.url
+export const REGISTRY_FILE = path.join(
+  PACKAGE_ROOT,
+  "registry",
+  "bases",
+  "base",
+  "registry.json"
+)
+export const STYLES_DIR = path.join(PACKAGE_ROOT, "styles")
+export const BASE_UTILS_FILE = path.join(
+  PACKAGE_ROOT,
+  "registry",
+  "bases",
+  "base",
+  "lib",
+  "utils.ts"
 )
 
 export async function loadRegistry() {

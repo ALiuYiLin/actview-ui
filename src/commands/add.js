@@ -10,7 +10,12 @@
 import path from "node:path"
 import { readFile, writeFile, mkdir } from "node:fs/promises"
 import { loadUserConfig, fileExists } from "../lib/config.js"
-import { loadRegistry, resolveRegistryTree, STYLES_ROOT } from "../lib/registry.js"
+import {
+  loadRegistry,
+  resolveRegistryTree,
+  STYLES_DIR,
+  BASE_UTILS_FILE,
+} from "../lib/registry.js"
 import {
   resolveFilePath,
   transformImports,
@@ -18,7 +23,6 @@ import {
   restoreRegistryImports,
   aliasToLocalDir,
 } from "../lib/transforms.js"
-import { BASE_UTILS_FILE } from "../lib/registry.js"
 
 export async function runAddCommand(args) {
   const cwd = path.resolve(args.cwd ?? process.cwd())
@@ -50,10 +54,7 @@ export async function runAddCommand(args) {
       }
       for (const file of item.files) {
         // 包内 styles 产物（文档站形态）→ 还原为 registry 形态 content
-        const stylesFile = new URL(
-          `../../styles/${style}/${file.path}`,
-          import.meta.url
-        )
+        const stylesFile = path.join(STYLES_DIR, style, file.path)
         let content = await readFile(stylesFile, "utf8")
         content = restoreRegistryImports(content, style)
 

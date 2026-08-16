@@ -2,7 +2,9 @@
 // - 跨 item 引用 separator（registryDependencies）
 // - IconPlaceholder（用户端 transform-icons 按 iconLibrary 替换为
 //   @actview/lucide 图标组件并注入 import，复刻 shadcn 原版机制）
+// - defineComponent + render 内解构 props（避免 setup 快照，见 button.tsx 注释）
 import { ChevronDown } from "@actview/lucide"
+import { defineComponent } from "actview"
 import { cva, type VariantProps } from "class-variance-authority"
 import type { HTMLAttributes, PropsOf } from "@actview/jsx"
 
@@ -21,76 +23,89 @@ const buttonGroupVariants = cva("inline-flex overflow-hidden rounded-full border
   },
 })
 
-function ButtonGroup(
-  props: HTMLAttributes & VariantProps<typeof buttonGroupVariants>
-) {
-  const {
-    class: className,
-    className: legacyClassName,
-    orientation,
-    ...rest
-  } = props
+const ButtonGroup = defineComponent(
+  (props: HTMLAttributes & VariantProps<typeof buttonGroupVariants>) => {
+    return () => {
+      const {
+        class: className,
+        className: legacyClassName,
+        orientation = "horizontal",
+        ...rest
+      } = props
 
-  return (
-    <div
-      role="group"
-      data-slot="button-group"
-      data-orientation={orientation}
-      class={cn(
-        buttonGroupVariants({ orientation }),
-        className,
-        legacyClassName
-      )}
-      {...rest}
-    />
-  )
-}
+      return (
+        <div
+          role="group"
+          data-slot="button-group"
+          data-orientation={orientation}
+          class={cn(
+            buttonGroupVariants({ orientation }),
+            className,
+            legacyClassName
+          )}
+          {...rest}
+        />
+      )
+    }
+  },
+  "ButtonGroup"
+)
 
-function ButtonGroupText(props: HTMLAttributes) {
-  const {
-    class: className,
-    className: legacyClassName,
-    children,
-    ...rest
-  } = props
+const ButtonGroupText = defineComponent(
+  (props: HTMLAttributes) => {
+    return () => {
+      const {
+        class: className,
+        className: legacyClassName,
+        children,
+        ...rest
+      } = props
 
-  return (
-    <div
-      data-slot="button-group-text"
-      class={cn(
-        "px-3.5 text-sm text-violet-900 flex items-center",
-        className,
-        legacyClassName
-      )}
-      {...rest}
-    >
-      <ChevronDown />
-      {children}
-    </div>
-  )
-}
+      return (
+        <div
+          data-slot="button-group-text"
+          class={cn(
+            "px-3.5 text-sm text-violet-900 flex items-center",
+            className,
+            legacyClassName
+          )}
+          {...rest}
+        >
+          <ChevronDown />
+          {children}
+        </div>
+      )
+    }
+  },
+  "ButtonGroupText"
+)
 
-function ButtonGroupSeparator(props: PropsOf<typeof Separator>) {
-  const {
-    class: className,
-    className: legacyClassName,
-    orientation = "vertical",
-    ...rest
-  } = props
+const ButtonGroupSeparator = defineComponent(
+  (props: PropsOf<typeof Separator>) => {
+    return () => {
+      const {
+        class: className,
+        className: legacyClassName,
+        orientation = "vertical",
+        ...rest
+      } = props
 
-  return (
-    <Separator
-      data-slot="button-group-separator"
-      orientation={orientation}
-      class={cn(
-        "bg-violet-500 relative self-stretch",
-        className,
-        legacyClassName
-      )}
-      {...rest}
-    />
-  )
-}
+      return (
+        <Separator
+          data-slot="button-group-separator"
+          orientation={orientation}
+          class={cn(
+            "bg-violet-500 relative self-stretch",
+            className,
+            legacyClassName
+          )}
+          {...rest}
+        />
+      )
+    }
+  },
+  "ButtonGroupSeparator"
+)
 
 export {
   ButtonGroup,
