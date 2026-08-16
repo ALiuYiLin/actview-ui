@@ -49,7 +49,6 @@ registry/
   styles/style-mist.css
 scripts/
   build.mjs                   # 第一段：base + style → styles/<style>/**
-  install.mjs                 # 第二段旧演示入口的薄包装（转发到 CLI add）
 package.json                  # react / cva / lucide-react / typescript + bin: actview-ui
 tsconfig.json                 # paths: "@/*" → ["./*", "./user-project/*"]
 lib/utils.ts                  # styles 产物 import "@/lib/utils" 的解析目标
@@ -74,7 +73,7 @@ user-project/                 # 演示用"用户项目"（由 CLI init + add 生
 | `transformStyleMap(source, map)` | `packages/shadcn/src/styles/transform-style-map.ts`（ts-morph AST 遍历 cva） | 正则贪婪匹配替换字符串中的 `cn-*` token |
 | `rewriteRegistryImports(source)` | `apps/v4/scripts/build-registry.mts` 的 `copyUIToStyles` | `@/registry/bases/base/ui/` → `@/styles/base-<style>/ui/`、`lib/utils` → `@/lib/utils` |
 
-### 第二段 scripts/install.mjs
+### 第二段 src/commands/add.js（CLI actview-ui add）
 
 | 本仓库 | shadcn/ui 原版 |
 |---|---|
@@ -101,8 +100,8 @@ actview-ui add button-group                      # 依赖树解析 + import 重�
 actview-ui add button separator                  # 一次安装多个组件
 actview-ui add button-group                      # 内容相同 → 全部 skip
 
-# 第二段：旧演示脚本（薄包装，等价 actview-ui add）
-node scripts/install.mjs --item button-group --style base-aurora
+# 或在仓库根直接跑 demo（等价于上面 cwd=user-project 的 add）
+npm run install:demo
 
 # 全量类型检查（所有 tsx 零报错）
 npx tsc --noEmit
@@ -116,11 +115,11 @@ CLI 与真实 shadcn 的对应：
 
 真实 `button.json` 分发给用户的 `content` 里 import 是 **registry 形态**
 （`@/registry/base-nova/lib/utils`），styles 产物则是文档站重写过（`@/lib/utils`）的。
-install.mjs 会先把 `@/lib/utils` 还原成 `@/registry/<style>/lib/utils`，
+`actview-ui add` 会先把 `@/lib/utils` 还原成 `@/registry/<style>/lib/utils`，
 再走 `transformImports` —— 与真实 CLI 行为一致：
 
 ```
-"@/registry/base-aurora/lib/utils"  ──aliases.utils──►  "@/utilities/cn"
+"@/registry/base-aurora/lib/utils"  ──aliases.utils──►  "@/lib/utils"
 "registry/base-aurora/ui/button.tsx" ──type+aliases.ui─►  user-project/components/ui/button.tsx
 ```
 

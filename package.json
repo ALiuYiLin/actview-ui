@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "build": "node scripts/build.mjs",
-    "install:demo": "node scripts/install.mjs --item button-group --style base-aurora",
+    "install:demo": "node bin/actview-ui.js add button-group --style base-aurora --cwd user-project",
     "cli": "node bin/actview-ui.js",
     "typecheck": "tsc --noEmit"
   },

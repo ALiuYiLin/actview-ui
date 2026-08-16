@@ -12,11 +12,11 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 
-const buttonGroupVariants = cva("inline-flex overflow-hidden rounded-full border border-violet-500 bg-violet-50 flex w-fit items-stretch", {
+const buttonGroupVariants = cva("inline-flex overflow-hidden rounded-xl border border-emerald-500/35 bg-emerald-500/10 flex w-fit items-stretch", {
   variants: {
     orientation: {
       horizontal: "flex-row",
-      vertical: "gap-1 flex-col",
+      vertical: "gap-px flex-col",
     },
   },
   defaultVariants: {
@@ -49,7 +49,7 @@ function ButtonGroupText({
   return (
     <div
       data-slot="button-group-text"
-      className={cn("px-3.5 text-sm text-violet-900 flex items-center", className)}
+      className={cn("px-3 text-sm font-medium text-emerald-900 flex items-center", className)}
       {...props}
     >
       <ChevronDown />
@@ -67,7 +67,7 @@ function ButtonGroupSeparator({
     <Separator
       data-slot="button-group-separator"
       orientation={orientation}
-      className={cn("bg-violet-500 relative self-stretch", className)}
+      className={cn("bg-emerald-500/35 relative self-stretch", className)}
       {...props}
     />
   )
