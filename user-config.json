@@ -1,0 +1,12 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-aurora",
+  "tsx": true,
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/utilities/cn",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  }
+}

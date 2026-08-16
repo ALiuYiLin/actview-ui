@@ -1,0 +1,68 @@
+/* Style: mist — 紫色胶囊柔和（自定义 CSS，不使用 tailwind） */
+.cn-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid #8b5cf6;
+  border-radius: 999px;
+  background: #f5f3ff;
+  font-weight: 500;
+  transition: opacity 0.3s ease;
+}
+
+.cn-button-variant-default {
+  background: #8b5cf6;
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
+}
+
+.cn-button-variant-outline {
+  background: transparent;
+  color: #8b5cf6;
+}
+
+.cn-button-variant-secondary {
+  background: #ede9fe;
+  color: #4c1d95;
+}
+
+.cn-button-variant-ghost {
+  background: transparent;
+  color: #4c1d95;
+}
+
+.cn-button-variant-destructive {
+  background: #f43f5e;
+  color: #ffffff;
+}
+
+.cn-button-variant-link {
+  background: transparent;
+  color: #8b5cf6;
+  text-decoration: underline wavy;
+}
+
+.cn-button-size-default {
+  height: 40px;
+  padding: 0 20px;
+  font-size: 14px;
+}
+
+.cn-button-size-sm {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
+.cn-button-size-lg {
+  height: 48px;
+  padding: 0 28px;
+  font-size: 16px;
+}
+
+.cn-button-size-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
