@@ -1,7 +1,7 @@
 {
   "name": "@actview/ui",
   "homepage": "https://example.com",
-  "dependencies": ["actview", "@actview/jsx"],
+  "dependencies": ["actview", "@actview/jsx", "tailwind-merge"],
   "items": [
     {
       "name": "button",

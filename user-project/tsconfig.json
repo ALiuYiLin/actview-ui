@@ -12,11 +12,13 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "forceConsistentCasingInFileNames": true,
+    "useDefineForClassFields": true,
+    "types": ["vite/client"],
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*", "./user-project/*"]
+      "@/*": ["./*"],
+      "@/styles/*": ["../styles/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "dist", "user-project"]
+  "include": ["src", "components", "vite.config.ts"]
 }

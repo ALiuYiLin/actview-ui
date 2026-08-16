@@ -87,15 +87,21 @@ function transformStyleMap(source, styleMap) {
 // ---------------------------------------------------------------------------
 // ③ copyUIToStyles 的最小等价物：
 //    registry 内部路径 → styles 产物路径（产物目录名带 base- 前缀）：
-//      @/registry/bases/base/ui/xxx      → @/styles/base-<style>/ui/xxx（ui 互引）
-//      @/registry/bases/base/lib/utils   → @/lib/utils
-//      其余 @/registry/bases/base/       → @/
+//      @/registry/bases/base/ui/xxx       → @/styles/base-<style>/ui/xxx（ui 互引）
+//      @/app/(create)/components/icon-placeholder
+//                                         → @/styles/base-<style>/components/icon-placeholder
+//      @/registry/bases/base/lib/utils    → @/lib/utils
+//      其余 @/registry/bases/base/        → @/
 // ---------------------------------------------------------------------------
 function rewriteRegistryImports(source, outputStyleName) {
   return source
     .replaceAll(
       "@/registry/bases/base/ui/",
       `@/styles/${outputStyleName}/ui/`
+    )
+    .replaceAll(
+      "@/app/(create)/components/icon-placeholder",
+      `@/styles/${outputStyleName}/components/icon-placeholder`
     )
     .replaceAll("@/registry/bases/base/lib/utils", "@/lib/utils")
     .replaceAll("@/registry/bases/base/", "@/")

@@ -5,7 +5,7 @@
 import { cva, type VariantProps } from "class-variance-authority"
 import type { HTMLAttributes, PropsOf } from "@actview/jsx"
 
-import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
+import { IconPlaceholder } from "@/styles/base-mist/components/icon-placeholder"
 import { cn } from "@/lib/utils"
 import { Separator } from "@/styles/base-mist/ui/separator"
 

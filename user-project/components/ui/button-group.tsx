@@ -9,11 +9,11 @@ import { IconPlaceholder } from "@/components/icon-placeholder"
 import { cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 
-const buttonGroupVariants = cva("inline-flex overflow-hidden rounded-xl border border-emerald-500/35 bg-emerald-500/10 flex w-fit items-stretch", {
+const buttonGroupVariants = cva("inline-flex overflow-hidden rounded-full border border-violet-500 bg-violet-50 flex w-fit items-stretch", {
   variants: {
     orientation: {
       horizontal: "flex-row",
-      vertical: "gap-px flex-col",
+      vertical: "gap-1 flex-col",
     },
   },
   defaultVariants: {
@@ -58,7 +58,7 @@ function ButtonGroupText(props: HTMLAttributes) {
     <div
       data-slot="button-group-text"
       class={cn(
-        "px-3 text-sm font-medium text-emerald-900 flex items-center",
+        "px-3.5 text-sm text-violet-900 flex items-center",
         className,
         legacyClassName
       )}
@@ -83,7 +83,7 @@ function ButtonGroupSeparator(props: PropsOf<typeof Separator>) {
       data-slot="button-group-separator"
       orientation={orientation}
       class={cn(
-        "bg-emerald-500/35 relative self-stretch",
+        "bg-violet-500 relative self-stretch",
         className,
         legacyClassName
       )}

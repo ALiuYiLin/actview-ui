@@ -69,10 +69,18 @@ styles/                       # 第一段产物
   base-aurora/{ui/button.tsx, ui/separator.tsx, ui/button-group.tsx}
   base-ember/...
   base-mist/...
-user-project/                 # 演示用"用户项目"（由 CLI init + add 生成）
+user-project/                 # 演示用"用户项目"（独立工程：actview + vite + tailwind）
   components.json             # actview-ui init 生成
-  lib/utils.ts                # actview-ui init 安装的 utils
-  components/ui/*.tsx         # actview-ui add 安装的组件
+  package.json                # actview / @actview/jsx / cva / tailwind-merge + vite/tailwind
+  vite.config.ts              # actviewPlugin()（Babel defineComponent 转换，必需）+ tailwindcss()
+  tsconfig.json               # jsxImportSource: "@actview/jsx" + paths（@/*、@/styles/*）
+  index.html                  # #app 挂载点
+  src/main.tsx                # createApp(App).mount("#app")
+  src/App.tsx                 # 效果呈现页：三套 style 对比 + 响应式计数器
+  src/index.css               # @import "tailwindcss" + @source "../../styles"
+  components/ui/*.tsx         # actview-ui add 安装的组件（当前 style）
+  components/icon-placeholder.tsx
+  lib/utils.ts                # actview-ui init 安装的 utils（cn = twMerge）
 ```
 
 ## 复刻点对照（对应真实 shadcn 代码）
@@ -116,8 +124,15 @@ actview-ui add button-group                      # 内容相同 → 全部 skip
 # 或在仓库根直接跑 demo（等价于上面 cwd=user-project 的 add）
 npm run install:demo
 
-# 全量类型检查（所有 tsx 零报错）
+# 全量类型检查（根 + user-project 独立工程）
 npx tsc --noEmit
+cd user-project && npx tsc --noEmit
+
+# 效果呈现页（user-project 独立 vite 工程，真实浏览器渲染）
+cd user-project
+npm install
+npm run dev          # http://localhost:5173（端口占用时 vite.config.ts 可调）
+npm run build        # tsc + vite build（Babel 转换 + tailwind 扫描的强验证）
 ```
 
 CLI 与真实 shadcn 的对应：

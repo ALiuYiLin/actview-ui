@@ -20,7 +20,7 @@ function Separator(
       aria-orientation={orientation}
       data-orientation={orientation}
       class={cn(
-        "bg-emerald-500/35 shrink-0",
+        "bg-violet-500 shrink-0",
         orientation === "horizontal" ? "h-px w-full" : "w-px self-stretch",
         className,
         legacyClassName

@@ -142,7 +142,7 @@ export function restoreRegistryImports(source, style) {
   return source
     .replaceAll(`@/styles/${style}/ui/`, `@/registry/${style}/ui/`)
     .replaceAll(
-      "@/app/(create)/components/icon-placeholder",
+      `@/styles/${style}/components/icon-placeholder`,
       `@/registry/${style}/components/icon-placeholder`
     )
     .replaceAll("@/lib/utils", `@/registry/${style}/lib/utils`)
