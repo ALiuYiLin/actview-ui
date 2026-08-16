@@ -1,9 +1,13 @@
 // @actview/base-ui Radio / RadioGroup：复刻 Base UI radio + radio-group（1.6.0）。
-//   RadioGroup — <div>，provide 组上下文（name/value/disabled/onValueChange）
-//   Radio.Root — <button type="button" role="radio" aria-checked tabindex="0">，
-//                state {checked, disabled} → data-checked / data-disabled
-//   Radio.Indicator — <span>，仅在选中时挂载，state 同 Root
-// 规范：函数组件 + useProps + computed；provide/useInjects。
+// React golden 实测结构（test/fixtures/golden/l1a.radio-group.*.html）：
+//   RadioGroup  — <div role="radiogroup">
+//   Radio.Root  — <span role="radio" aria-checked tabindex（选中 0/未选 -1）
+//                 id data-checked/data-unchecked data-composite-item-active(选中)>
+//                 + 视觉隐藏原生 <input type="radio" value aria-hidden
+//                 tabindex="-1" id>（选中时带 checked）
+//   Radio.Indicator — <span data-checked>，仅在选中时挂载
+// 行为：click 归属组 value（受控/非受控），disabled 拦截。
+// 规范：函数组件 + useProps + computed；provide/useInjects；受控同步按值比较。
 import {
   computed,
   provide,
@@ -12,12 +16,15 @@ import {
   useProps,
   watchEffect,
 } from "@actview/core"
+import { Fragment, jsx } from "@actview/jsx"
 import type { ButtonHTMLAttributes, HTMLAttributes } from "@actview/jsx"
 
+import { sameValue } from "../internals/compare"
 import { getStateAttributesProps } from "../internals/state-attributes"
+import { SR_ONLY_STYLE } from "../internals/sr-style"
+import { useBaseUiId } from "../internals/use-base-ui-id"
 import { mergeProps } from "../merge-props"
 import { mergeRenderProps } from "../use-render"
-import { sameValue } from "../internals/compare"
 
 export const RADIO_GROUP_KEY = "actview-radio-group"
 const RADIO_KEY = "actview-radio"
@@ -27,6 +34,10 @@ type RadioGroupCtx = {
   value: { value: any }
   disabled: { value: boolean }
   setValue: (v: any) => void
+}
+
+function checkedStateProps(checked: boolean) {
+  return checked ? { "data-checked": "" } : { "data-unchecked": "" }
 }
 
 function RadioGroup(
@@ -71,7 +82,10 @@ function RadioGroup(
   provide(RADIO_GROUP_KEY, { name, value: groupValue, disabled, setValue })
 
   const merged = computed(() =>
-    mergeProps(rest.value as Record<string, any>)
+    mergeProps(
+      { role: "radiogroup" },
+      rest.value as Record<string, any>
+    )
   )
 
   return render.value == null ? (
@@ -89,15 +103,19 @@ function Root(
     id?: string
   }
 ) {
-  const { render, value, disabled, rest } = useProps(props, {
+  const { render, value, disabled, id, rest } = useProps(props, {
     render: undefined,
     value: undefined,
     disabled: undefined,
     id: undefined,
   })
   const group = useInjects(RADIO_GROUP_KEY) as RadioGroupCtx | undefined
+  const rootId = useBaseUiId(id.value)
+  const inputId = useBaseUiId()
 
-  const isDisabled = computed(() => disabled.value ?? group?.disabled.value ?? false)
+  const isDisabled = computed(
+    () => disabled.value ?? group?.disabled.value ?? false
+  )
   const isChecked = computed(() =>
     group ? group.value.value === value.value : false
   )
@@ -110,18 +128,17 @@ function Root(
 
     return mergeProps(
       {
-        type: "button",
         role: "radio",
-        tabindex: 0,
-        // React 对 aria-* false 渲染 "false" 属性；actview 会删 false 属性，String 化对齐
+        id: rootId,
+        // 组合（roving）tabindex：选中项 0，其余 -1
+        tabindex: checked ? 0 : -1,
         "aria-checked": String(checked),
         name: group?.name.value,
       },
-      isDisabled.value ? { disabled: true } : null,
-      getStateAttributesProps({
-        checked,
-        disabled: isDisabled.value,
-      }),
+      checkedStateProps(checked),
+      checked ? { "data-composite-item-active": "" } : null,
+      getStateAttributesProps({ disabled: isDisabled.value }),
+      isDisabled.value ? { "aria-disabled": "true" } : null,
       {
         onClick(event: any) {
           if (isDisabled.value) {
@@ -136,10 +153,37 @@ function Root(
     )
   })
 
+  // 隐藏原生 input：checked/value 以 attribute 呈现（actview 走 property 不反射）
+  let inputEl: HTMLInputElement | null = null
+  const syncInput = () => {
+    // 先读依赖再早退（watchEffect 依赖追踪在早退后不生效）
+    const checked = isChecked.value
+    const val = String(value.value ?? "")
+    if (!inputEl) return
+    if (checked) inputEl.setAttribute("checked", "")
+    else inputEl.removeAttribute("checked")
+    inputEl.setAttribute("value", val)
+  }
+  watchEffect(syncInput)
+
+  const hiddenInput = jsx("input", {
+    "aria-hidden": "true",
+    id: inputId,
+    style: SR_ONLY_STYLE,
+    tabindex: -1,
+    type: "radio",
+    ref: (el: HTMLInputElement | null) => {
+      inputEl = el
+      syncInput()
+    },
+  })
+
   return render.value == null ? (
-    <button {...merged.value} />
+    jsx(Fragment, {
+      children: [jsx("span", merged.value), hiddenInput],
+    })
   ) : (
-    mergeRenderProps(render.value, "button", merged.value, rest.value.children)
+    mergeRenderProps(render.value, "span", merged.value, rest.value.children)
   )
 }
 
@@ -151,10 +195,8 @@ function Indicator(props: HTMLAttributes & { render?: any }) {
 
   const merged = computed(() =>
     mergeProps(
-      getStateAttributesProps({
-        checked: ctx?.checked.value ?? false,
-        disabled: ctx?.disabled.value ?? false,
-      }),
+      checkedStateProps(ctx?.checked.value ?? false),
+      getStateAttributesProps({ disabled: ctx?.disabled.value ?? false }),
       rest.value as Record<string, any>
     )
   )

@@ -83,7 +83,13 @@ function Toggle(
     const isDisabled = disabled.value || (group?.disabled.value ?? false)
 
     return mergeProps(
-      { type: "button", tabindex: 0, "aria-pressed": String(isPressed) },
+      {
+        type: "button",
+        tabindex: group ? (isPressed ? 0 : -1) : 0,
+        "aria-pressed": String(isPressed),
+        // 组内（composite）：aria-disabled 显式输出（golden：aria-disabled="false"）
+        ...(group ? { "aria-disabled": String(isDisabled) } : null),
+      },
       isDisabled ? { disabled: true } : null,
       getStateAttributesProps({ pressed: isPressed, disabled: isDisabled }),
       {

@@ -68,11 +68,7 @@ function ToggleGroup(
 
   const merged = computed(() =>
     mergeProps(
-      getStateAttributesProps({
-        disabled: disabled.value,
-        horizontal: orientation.value === "horizontal",
-        vertical: orientation.value === "vertical",
-      }),
+      { role: "group" },
       rest.value as Record<string, any>
     )
   )

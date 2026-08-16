@@ -1,11 +1,18 @@
-// @actview/base-ui Slider：复刻 Base UI slider（1.6.0）的 DOM 契约（M1 范围）。
-//   Root      — <div>，state {disabled, dragging, horizontal/vertical}
-//               → data-disabled / data-dragging / data-horizontal / data-vertical
-//   Control   — <div>，Track/Indicator/Thumb 的组合容器
-//   Track     — <div>，Indicator 在 Track 内
-//   Indicator — <div>，内联定位样式（golden 归一化为 {v}）
-//   Thumb     — <span>，内联定位样式（{v}）；数量 = value/defaultValue 长度（默认 [min,max]）
-// 行为（M1）：渲染结构 + 受控值显示；指针拖拽随视觉里程碑补齐。
+// @actview/base-ui Slider：复刻 Base UI slider（1.6.0）的 DOM 契约。
+// React golden 实测结构（test/fixtures/golden/l1a.slider.*.html）：
+//   Root      — <div role="group" data-orientation id>
+//   Control   — <div data-base-ui-slider-control data-orientation>
+//   Track     — <div data-orientation style="position: relative;">
+//   Indicator — <div data-base-ui-slider-indicator data-orientation
+//                style="--relative-size: 0%; --start-position: 0%; height: 1px;
+//                inset-inline-start: var(--start-position); position: relative;
+//                visibility: hidden; width: 1px;">
+//   Thumb     — <div data-index data-orientation id
+//                style="--position: 0%; inset-inline-start: var(--position);
+//                position: absolute; top: 1px; visibility: hidden;">
+//                + 视觉隐藏原生 <input type="range" min max step value
+//                aria-orientation aria-valuenow aria-valuetext>
+// 行为（M1）：结构 + 受控值；指针拖拽随视觉里程碑补齐。
 // 规范：函数组件 + useProps + computed；provide/useInjects。
 import {
   computed,
@@ -13,9 +20,11 @@ import {
   useInjects,
   useProps,
 } from "@actview/core"
+import { jsx } from "@actview/jsx"
 import type { HTMLAttributes } from "@actview/jsx"
 
-import { getStateAttributesProps } from "../internals/state-attributes"
+import { SR_ONLY_STYLE } from "../internals/sr-style"
+import { useBaseUiId } from "../internals/use-base-ui-id"
 import { mergeProps } from "../merge-props"
 import { mergeRenderProps } from "../use-render"
 
@@ -27,6 +36,8 @@ type SliderCtx = {
   values: { value: number[] }
   min: { value: number }
   max: { value: number }
+  // Thumb 挂载顺序领号（Base UI composite index；golden：data-index 按序）
+  thumbSeq: { n: number }
 }
 
 function Root(
@@ -50,6 +61,7 @@ function Root(
     max,
     disabled,
     orientation,
+    thumbAlignment,
     rest,
   } = useProps(props, {
     render: undefined,
@@ -59,6 +71,7 @@ function Root(
     max: (v) => v ?? 100,
     disabled: (v) => v ?? false,
     orientation: (v) => v ?? "horizontal",
+    thumbAlignment: undefined,
     onValueChange: undefined,
   })
 
@@ -69,16 +82,23 @@ function Root(
     if (Array.isArray(d)) return d
     return [min.value, max.value]
   })
-  provide(SLIDER_KEY, { disabled, orientation, values, min, max })
+  provide(SLIDER_KEY, {
+    disabled,
+    orientation,
+    values,
+    min,
+    max,
+    thumbSeq: { n: 0 },
+  })
+  const rootId = useBaseUiId()
 
   const merged = computed(() =>
     mergeProps(
-      getStateAttributesProps({
-        disabled: disabled.value,
-        dragging: false,
-        horizontal: orientation.value === "horizontal",
-        vertical: orientation.value === "vertical",
-      }),
+      {
+        role: "group",
+        id: rootId,
+        "data-orientation": orientation.value,
+      },
       rest.value as Record<string, any>
     )
   )
@@ -96,12 +116,10 @@ function Control(props: HTMLAttributes & { render?: any }) {
 
   const merged = computed(() =>
     mergeProps(
-      getStateAttributesProps({
-        disabled: ctx?.disabled.value ?? false,
-        dragging: false,
-        horizontal: ctx?.orientation.value === "horizontal",
-        vertical: ctx?.orientation.value === "vertical",
-      }),
+      {
+        "data-base-ui-slider-control": "",
+        "data-orientation": ctx?.orientation.value ?? "horizontal",
+      },
       rest.value as Record<string, any>
     )
   )
@@ -117,17 +135,20 @@ function Track(props: HTMLAttributes & { render?: any }) {
   const { render, rest } = useProps(props, { render: undefined })
   const ctx = useInjects(SLIDER_KEY) as SliderCtx | undefined
 
-  const merged = computed(() =>
-    mergeProps(
-      getStateAttributesProps({
-        disabled: ctx?.disabled.value ?? false,
-        dragging: false,
-        horizontal: ctx?.orientation.value === "horizontal",
-        vertical: ctx?.orientation.value === "vertical",
-      }),
-      rest.value as Record<string, any>
+  const merged = computed(() => {
+    const external = rest.value as Record<string, any>
+    const { style, ...elementProps } = external
+    return mergeProps(
+      {
+        "data-orientation": ctx?.orientation.value ?? "horizontal",
+        style:
+          style != null
+            ? `position: relative; ${String(style)}`
+            : "position: relative;",
+      },
+      elementProps
     )
-  )
+  })
 
   return render.value == null ? (
     <div {...merged.value} />
@@ -143,16 +164,15 @@ function Indicator(props: HTMLAttributes & { render?: any }) {
   const merged = computed(() => {
     const external = rest.value as Record<string, any>
     const { style, ...elementProps } = external
-    // 内联定位（happy-dom rect=0 下为 0 值；golden 归一化 {v}）
-    const posStyle = "left: 0px; position: absolute;"
+    const positionStyle =
+      "--relative-size: 0%; --start-position: 0%; height: 1px; inset-inline-start: var(--start-position); position: relative; visibility: hidden; width: 1px;"
     return mergeProps(
-      { style: `${posStyle}${style != null ? " " + String(style) : ""}` },
-      getStateAttributesProps({
-        disabled: ctx?.disabled.value ?? false,
-        dragging: false,
-        horizontal: ctx?.orientation.value === "horizontal",
-        vertical: ctx?.orientation.value === "vertical",
-      }),
+      {
+        "data-base-ui-slider-indicator": "",
+        "data-orientation": ctx?.orientation.value ?? "horizontal",
+        style:
+          style != null ? `${positionStyle} ${String(style)}` : positionStyle,
+      },
       elementProps
     )
   })
@@ -164,31 +184,69 @@ function Indicator(props: HTMLAttributes & { render?: any }) {
   )
 }
 
-function Thumb(props: HTMLAttributes & { render?: any }) {
-  const { render, rest } = useProps(props, { render: undefined })
+function Thumb(
+  props: HTMLAttributes & { render?: any; index?: number }
+) {
+  const { render, index, rest } = useProps(props, {
+    render: undefined,
+    index: (v) => v ?? 0,
+  })
   const ctx = useInjects(SLIDER_KEY) as SliderCtx | undefined
+  // Thumb 挂载顺序领号（setup 仅首挂执行一次，顺序稳定）
+  const thumbIndex = ctx?.thumbSeq ? ctx.thumbSeq.n++ : index.value
+  const thumbId = useBaseUiId()
+  const inputId = useBaseUiId()
 
   const merged = computed(() => {
     const external = rest.value as Record<string, any>
     const { style, ...elementProps } = external
-    // 内联定位（happy-dom rect=0 下为 0 值；golden 归一化 {v}）
-    const posStyle = "left: 0px; position: absolute;"
+    const positionStyle =
+      "--position: 0%; inset-inline-start: var(--position); position: absolute; top: 1px; visibility: hidden;"
     return mergeProps(
-      { style: `${posStyle}${style != null ? " " + String(style) : ""}` },
-      getStateAttributesProps({
-        disabled: ctx?.disabled.value ?? false,
-        dragging: false,
-        horizontal: ctx?.orientation.value === "horizontal",
-        vertical: ctx?.orientation.value === "vertical",
-      }),
+      {
+        "data-index": String(thumbIndex),
+        "data-orientation": ctx?.orientation.value ?? "horizontal",
+        id: thumbId,
+        style:
+          style != null ? `${positionStyle} ${String(style)}` : positionStyle,
+      },
       elementProps
     )
   })
 
+  const value = computed(() => ctx?.values.value[thumbIndex])
+
+  const inputProps = computed(() => {
+    const count = ctx?.values.value.length ?? 1
+    const i = thumbIndex
+    const v = ctx?.values.value[i] ?? 0
+    let vt = String(v)
+    if (count > 1) {
+      vt =
+        i === 0 ? `${v} start range` : i === count - 1 ? `${v} end range` : `${v} middle range`
+    }
+    return {
+      "aria-orientation": ctx?.orientation.value ?? "horizontal",
+      "aria-valuenow": String(v),
+      "aria-valuetext": vt,
+      id: inputId,
+      max: String(ctx?.max.value ?? 100),
+      min: String(ctx?.min.value ?? 0),
+      step: "1",
+      style: SR_ONLY_STYLE,
+      type: "range",
+      // value 以 attribute 呈现（actview 的 value 走 property 不反射），
+      // 挂载后由 ref 命令式写入
+      ref: (el: HTMLInputElement | null) => {
+        if (el) el.setAttribute("value", String(v))
+      },
+    }
+  })
+
   return render.value == null ? (
-    <span {...merged.value} />
+    <div {...merged.value}>{jsx("input", inputProps.value as any)}</div>
   ) : (
-    mergeRenderProps(render.value, "span", merged.value, rest.value.children)
+    mergeRenderProps(render.value, "div", merged.value, rest.value.children)
   )
 }
 

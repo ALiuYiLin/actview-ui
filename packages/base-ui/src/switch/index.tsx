@@ -1,7 +1,9 @@
-// @actview/base-ui Switch：复刻 Base UI switch（1.6.0）的 DOM 契约（M1 范围）。
-//   Root  — <button type="button" tabindex="0">，state {checked, disabled}
-//           → data-checked / data-unchecked（checked 真伪双态映射，styles 依赖）
-//   Thumb — <span>，state 同 Root
+// @actview/base-ui Switch：复刻 Base UI switch（1.6.0）的 DOM 契约。
+// React golden 实测结构（test/fixtures/golden/l1a.switch.*.html）：
+//   Root  — <span role="switch" aria-checked tabindex="0" id data-checked/
+//           data-unchecked>（disabled → data-disabled）+ 视觉隐藏原生
+//           <input type="checkbox" aria-hidden tabindex="-1" id>（checked 时带 checked）
+//   Thumb — <span data-checked/data-unchecked>
 // 行为：click 切换（受控/非受控），disabled 拦截。
 // 规范：函数组件 + useProps + computed；provide/useInjects。
 import {
@@ -12,9 +14,12 @@ import {
   useProps,
   watchEffect,
 } from "@actview/core"
+import { Fragment, jsx } from "@actview/jsx"
 import type { ButtonHTMLAttributes, HTMLAttributes } from "@actview/jsx"
 
 import { getStateAttributesProps } from "../internals/state-attributes"
+import { SR_ONLY_STYLE } from "../internals/sr-style"
+import { useBaseUiId } from "../internals/use-base-ui-id"
 import { mergeProps } from "../merge-props"
 import { mergeRenderProps } from "../use-render"
 
@@ -53,6 +58,8 @@ function Root(
     onCheckedChange.value?.(v)
   }
   provide(SWITCH_KEY, { checked: state, disabled })
+  const rootId = useBaseUiId()
+  const inputId = useBaseUiId()
 
   const merged = computed(() => {
     const external = rest.value as Record<string, any>
@@ -61,10 +68,15 @@ function Root(
     const isDisabled = disabled.value
 
     return mergeProps(
-      { type: "button", tabindex: 0 },
-      isDisabled ? { disabled: true } : null,
+      {
+        role: "switch",
+        id: rootId,
+        tabindex: 0,
+        "aria-checked": String(isChecked),
+      },
       switchStateProps(isChecked),
       getStateAttributesProps({ disabled: isDisabled }),
+      isDisabled ? { "aria-disabled": "true" } : null,
       {
         onClick(event: any) {
           if (isDisabled) {
@@ -79,10 +91,35 @@ function Root(
     )
   })
 
+  // 隐藏原生 input：checked 以 attribute 呈现（同 checkbox 的 property 反射问题）
+  let inputEl: HTMLInputElement | null = null
+  const syncInput = () => {
+    // 先读依赖再早退（watchEffect 依赖追踪在早退后不生效）
+    const checked = state.value
+    if (!inputEl) return
+    if (checked) inputEl.setAttribute("checked", "")
+    else inputEl.removeAttribute("checked")
+  }
+  watchEffect(syncInput)
+
+  const hiddenInput = jsx("input", {
+    "aria-hidden": "true",
+    id: inputId,
+    style: SR_ONLY_STYLE,
+    tabindex: -1,
+    type: "checkbox",
+    ref: (el: HTMLInputElement | null) => {
+      inputEl = el
+      syncInput()
+    },
+  })
+
   return render.value == null ? (
-    <button {...merged.value} />
+    jsx(Fragment, {
+      children: [jsx("span", merged.value), hiddenInput],
+    })
   ) : (
-    mergeRenderProps(render.value, "button", merged.value, rest.value.children)
+    mergeRenderProps(render.value, "span", merged.value, rest.value.children)
   )
 }
 

@@ -31,8 +31,9 @@ function normalizeId(value: string): string {
     .replace(/^testing-\d+$/, "{root}")
     .replace(/«r\d+»/g, "{id}")
     .replace(/:r\d+:/g, "{id}")
-    // Base UI 的 useBaseUiId 形态：base-ui-_r_3_（React 19 useId «r3» 去括号）
-    .replace(/_r_\d+_/g, "{id}")
+    // Base UI 的 useBaseUiId 形态：base-ui-_r_r_（React 19 useId «rr» 去括号，
+    // 计数器为 base36 字母数字混合）
+    .replace(/_r_[0-9a-z]+_/g, "{id}")
 }
 
 function normalizeStyleValue(value: string): string {

@@ -77,6 +77,46 @@
     {
       "from": "apps/v4/registry/bases/base/ui/separator.tsx",
       "to": "src/registry/bases/base/ui/separator.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/input.tsx",
+      "to": "src/registry/bases/base/ui/input.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/switch.tsx",
+      "to": "src/registry/bases/base/ui/switch.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/progress.tsx",
+      "to": "src/registry/bases/base/ui/progress.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/toggle.tsx",
+      "to": "src/registry/bases/base/ui/toggle.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/toggle-group.tsx",
+      "to": "src/registry/bases/base/ui/toggle-group.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/radio-group.tsx",
+      "to": "src/registry/bases/base/ui/radio-group.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/slider.tsx",
+      "to": "src/registry/bases/base/ui/slider.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/checkbox.tsx",
+      "to": "src/registry/bases/base/ui/checkbox.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/input-group.tsx",
+      "to": "src/registry/bases/base/ui/input-group.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/direction.tsx",
+      "to": "src/registry/bases/base/ui/direction.tsx"
     }
   ],
   "notes": [
