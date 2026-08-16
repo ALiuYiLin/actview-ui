@@ -3,7 +3,10 @@
 //   buildThemeCssText(themes, { color, theme, radius }) → css 字符串
 //   注入 <style> 元素即可切换色板 / 明暗 / 圆角。
 //
-// 变量名与组件 style css 的引用一致：--color-* / --radius / --radius-md。
+// 变量名与组件 style css 的引用一致：--color-* / --radius。
+// 圆角刻度（复刻 shadcn v4 apps/v4/app/globals.css 的 @theme inline）：
+//   组件 token 使用静态刻度名（rounded-4xl 等），刻度由 --radius 推导，
+//   切换 --radius（style 层默认 / body.radius-* 覆盖）即整体缩放。
 export type ThemeVars = Record<string, string>
 
 export type Themes = {
@@ -17,6 +20,16 @@ export type ThemeOptions = {
   radius?: string
 }
 
+const RADIUS_SCALE: [string, string][] = [
+  ["--radius-sm", "0.6"],
+  ["--radius-md", "0.8"],
+  ["--radius-lg", "1"],
+  ["--radius-xl", "1.4"],
+  ["--radius-2xl", "1.8"],
+  ["--radius-3xl", "2.2"],
+  ["--radius-4xl", "2.6"],
+]
+
 function buildCssRule(selector: string, vars?: ThemeVars | null) {
   if (!vars) {
     return ""
@@ -26,6 +39,13 @@ function buildCssRule(selector: string, vars?: ThemeVars | null) {
     .map(([key, value]) => `  --color-${key}: ${value};`)
     .join("\n")
   return declarations ? `${selector} {\n${declarations}\n}\n` : ""
+}
+
+function buildRadiusScaleRule(): string {
+  const declarations = RADIUS_SCALE.map(
+    ([key, factor]) => `  ${key}: calc(var(--radius) * ${factor});`
+  ).join("\n")
+  return `:root {\n${declarations}\n}\n`
 }
 
 export function buildThemeCssText(
@@ -44,11 +64,12 @@ export function buildThemeCssText(
   // :root 同时写 light 值（默认亮色）
   css += buildCssRule(":root", { ...palette.dark, ...palette.light })
   css += buildCssRule(".dark", palette.dark)
+  css += buildRadiusScaleRule()
 
   // radius 覆盖（default 表示沿用 style 层默认值，不输出）
   const radiusValue = themes.radius?.[options.radius ?? "default"] ?? null
   if (radiusValue) {
-    css += `body.radius-${options.radius} {\n  --radius: ${radiusValue};\n  --radius-md: ${radiusValue};\n}\n`
+    css += `body.radius-${options.radius} {\n  --radius: ${radiusValue};\n}\n`
   }
 
   return css

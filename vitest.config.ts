@@ -20,5 +20,7 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     include: ["test/**/*.test.{ts,tsx,mjs,js}"],
+    // React 参考 harness 用独立配置跑（vitest.react.config.ts，alias 不同）
+    exclude: ["test/fixtures/react-reference/**"],
   },
 })

@@ -46,20 +46,117 @@ describe("路径②：语义类自由切换", () => {
   it("tailwind 编译：styles.css 的 @apply 展开为三套作用域规则", async () => {
     const raw = await readFile(STYLES_CSS, "utf8")
 
-    // loadStylesheet：解析 "@reference tailwindcss" 到包内 index.css
+    // token 使用 v4 主题变量（bg-primary 等），编译需注入 v4 准确形态的
+    // 变量桥（复刻 shadcn v4 globals.css）：
+    //   :root 定义原始变量（--primary/--background/...）
+    //   @theme inline 桥接 --color-*: var(--*)（inline = 编译产物直接引用 var(--*)）
+    //   --radius-* 刻度由 --radius 推导（radius 切换 = 整体缩放）
+    const THEME_PRELUDE = `
+:root {
+  --background: #fff; --foreground: #000;
+  --card: #fff; --card-foreground: #000;
+  --popover: #fff; --popover-foreground: #000;
+  --primary: #10b981; --primary-foreground: #fff;
+  --secondary: #f3f4f6; --secondary-foreground: #111;
+  --muted: #f3f4f6; --muted-foreground: #6b7280;
+  --accent: #f3f4f6; --accent-foreground: #111;
+  --destructive: #ef4444; --destructive-foreground: #fff;
+  --border: #e5e7eb; --input: #e5e7eb; --ring: #10b981;
+  --chart-1: #10b981; --chart-2: #f59e0b; --chart-3: #3b82f6;
+  --chart-4: #8b5cf6; --chart-5: #ec4899;
+  --sidebar: #f9fafb; --sidebar-foreground: #111;
+  --sidebar-primary: #10b981; --sidebar-primary-foreground: #fff;
+  --sidebar-accent: #f3f4f6; --sidebar-accent-foreground: #111;
+  --sidebar-border: #e5e7eb; --sidebar-ring: #10b981;
+  --radius: 0.625rem;
+}
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-caret-blink: caret-blink 1s step-end infinite;
+}
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+`
+    // loadStylesheet：解析 "@reference tailwindcss" / "@import tw-animate-css"
+    // 到包内实际文件（token 的 animate-in/fade-out 动画类依赖后者）
     const tailwindCssPath = require.resolve("tailwindcss/index.css")
-    const compiler = await compile(`@reference "tailwindcss";\n${raw}`, {
-      loadStylesheet: async (id, base) => {
-        if (id === "tailwindcss") {
-          return {
-            base,
-            path: tailwindCssPath,
-            content: await readFile(tailwindCssPath, "utf8"),
+    // tw-animate-css 的 exports 只暴露 "style" 条件，直接按 hoisted 布局定位
+    const animateCssPath = path.join(
+      process.cwd(),
+      "node_modules",
+      "tw-animate-css",
+      "dist",
+      "tw-animate.css"
+    )
+    const compiler = await compile(
+      `${THEME_PRELUDE}\n@reference "tailwindcss";\n${raw}`,
+      {
+        loadStylesheet: async (id, base) => {
+          if (id === "tailwindcss") {
+            return {
+              base,
+              path: tailwindCssPath,
+              content: await readFile(tailwindCssPath, "utf8"),
+            }
           }
-        }
-        throw new Error(`loadStylesheet: unknown id "${id}"`)
-      },
-    })
+          if (id === "tw-animate-css") {
+            return {
+              base,
+              path: animateCssPath,
+              content: await readFile(animateCssPath, "utf8"),
+            }
+          }
+          throw new Error(`loadStylesheet: unknown id "${id}"`)
+        },
+      }
+    )
     const output = compiler.build([])
 
     // 三套作用域规则都存在，@apply 已展开为标准 CSS 声明
@@ -70,8 +167,10 @@ describe("路径②：语义类自由切换", () => {
     expect(output).toContain(".cn-button")
     expect(output).toContain("border-radius")
     expect(output).toContain("display: inline-flex")
-    // 颜色全部主题变量化（路径③：运行时由 themes.json 注入切换）
-    expect(output).toContain("var(--color-primary)")
+    // 颜色经 @theme inline 桥接：编译产物直接引用原始变量（v4 语义）
+    expect(output).toContain("var(--primary)")
+    // 圆角刻度由 --radius 推导（radius 切换 = 整体缩放）
+    expect(output).toContain("var(--radius-4xl)")
     expect(output).toContain("var(--radius)")
   })
 

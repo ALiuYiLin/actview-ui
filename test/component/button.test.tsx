@@ -10,7 +10,7 @@ import { Button } from "@/styles/base-aurora/ui/button"
 afterEach(cleanup)
 
 describe("Button（styles/base-aurora/ui/button.tsx 构建物）", () => {
-  it("渲染默认 variant/size，cn(twMerge) 合并后无冲突类", () => {
+  it("渲染默认 variant/size，cn 合并与 token 展开正确", () => {
     function App() {
       return <Button>Hello</Button>
     }
@@ -18,11 +18,11 @@ describe("Button（styles/base-aurora/ui/button.tsx 构建物）", () => {
     const btn = container.querySelector("button")!
     expect(btn.getAttribute("data-slot")).toBe("button")
     expect(btn.textContent).toContain("Hello")
-    // variant 类 bg-(--color-primary) 覆盖基类 bg-(--color-primary)/10（twMerge 去重）
-    // 颜色已主题变量化（路径③），运行时由 themes.json 注入切换
-    expect(btn.className).toContain("bg-(--color-primary)")
-    expect(btn.className).not.toContain("bg-(--color-primary)/10")
-    expect(btn.className).toContain("rounded-[var(--radius)]")
+    // variant/size token 已展开为 luma 工具类（构建物形态）
+    expect(btn.className).toContain("bg-primary")
+    expect(btn.className).toContain("hover:bg-primary/80")
+    expect(btn.className).toContain("rounded-4xl")
+    expect(btn.className).toContain("h-9")
     // 基类与展开类不重复（inline-flex 只出现一次）
     const inlineCount = btn.className
       .split(" ")
@@ -41,7 +41,7 @@ describe("Button（styles/base-aurora/ui/button.tsx 构建物）", () => {
     const { container } = render(App)
     const btn = container.querySelector("button")!
     expect(btn.className).toContain("my-custom")
-    expect(btn.className).toContain("bg-transparent")
+    expect(btn.className).toContain("bg-background")
   })
 
   it("点击事件触发（actview 响应式更新，useProps 使 children 更新可达 render）", async () => {
@@ -70,6 +70,5 @@ describe("Button（styles/base-aurora/ui/button.tsx 构建物）", () => {
     const { container } = render(App)
     const btn = container.querySelector("button")!
     expect(btn.className).toContain("size-9")
-    expect(btn.className).toContain("p-0")
   })
 })

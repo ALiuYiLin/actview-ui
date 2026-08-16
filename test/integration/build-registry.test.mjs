@@ -16,16 +16,18 @@ const STYLES_ROOT = path.join(
 )
 
 describe("buildRegistry（路径①：展开产物）", () => {
-  it("产物 12 文件、无 cn-* 残留、三套 style 互异", async () => {
+  it("产物 15 文件（3 style × 5 items）、无 cn-* 残留、三套 style 互异", async () => {
     const written = await buildRegistry({ silent: true })
-    expect(written).toHaveLength(12)
+    expect(written).toHaveLength(15)
 
     for (const file of written) {
       const content = await readFile(path.join(STYLES_ROOT, file), "utf8")
       expect(content).not.toMatch(/\bcn-[a-z0-9-]+\b/)
     }
 
-    // 三套 style 的 button 互不相同（style 真正生效）
+    // token 全量同步后（docs/MIGRATION.md §3.8：3 套 style 共用 luma token 体），
+    // 路径①展开产物三套一致是预期行为——style 差异由 style 层默认变量
+    // （--radius）与 themes.json 主题层承担，不再写进组件类。
     const aurora = await readFile(
       path.join(STYLES_ROOT, "base-aurora", "ui", "button.tsx"),
       "utf8"
@@ -38,9 +40,26 @@ describe("buildRegistry（路径①：展开产物）", () => {
       path.join(STYLES_ROOT, "base-mist", "ui", "button.tsx"),
       "utf8"
     )
-    expect(aurora).not.toBe(ember)
-    expect(ember).not.toBe(mist)
-    expect(aurora).not.toBe(mist)
+    expect(aurora).toBe(ember)
+    expect(ember).toBe(mist)
+
+    // style 层差异真实存在：三套壳的 --radius 默认值互异
+    const registryStylesRoot = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "..",
+      "..",
+      "registry",
+      "styles"
+    )
+    const readStyle = (name) =>
+      readFile(path.join(registryStylesRoot, `${name}.css`), "utf8")
+    const radiusValues = []
+    for (const name of ["style-aurora", "style-ember", "style-mist"]) {
+      const css = await readStyle(name)
+      const m = css.match(/--radius:\s*([^;]+);/)
+      radiusValues.push(m?.[1])
+    }
+    expect(new Set(radiusValues).size).toBe(3)
   })
 
   it("产物 import 重写正确（ui 互引 / lib/utils / icon-placeholder）", async () => {

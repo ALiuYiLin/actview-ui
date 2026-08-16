@@ -5,7 +5,6 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "jsxImportSource": "@actview/jsx",
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
@@ -14,14 +13,8 @@
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "test/fixtures/react-reference",
-    "packages/base-ui/dist"
-  ]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.tsx", "render.tsx"]
 }

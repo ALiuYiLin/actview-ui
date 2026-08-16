@@ -134,8 +134,10 @@ export async function buildSemanticRegistry(options = {}) {
   }
 
   // 样式表：三套作用域规则合并（.style-<name> { ... }）
+  // @import tw-animate-css：token 的 animate-in/fade-out 等动画工具类依赖
+  // （同 shadcn BASE_STYLE css 的 @import "tw-animate-css"）
   let css =
-    "/* @actview/ui 作用域样式表：body 挂 style-<name> class 切换整套视觉。\n   需要 tailwind 处理 @apply。*/\n"
+    "/* @actview/ui 作用域样式表：body 挂 style-<name> class 切换整套视觉。\n   需要 tailwind 处理 @apply。*/\n@import \"tw-animate-css\";\n"
   for (const styleFile of styleFiles) {
     css += `\n${await readFile(path.join(stylesDir, styleFile), "utf8")}\n`
   }

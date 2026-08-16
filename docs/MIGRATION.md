@@ -184,14 +184,20 @@ DOM 结构保持一致是本迁移的硬约束，逐组件锁定以下细节：
 
 ### 5.1 Phase 0：前置基建（先做，不迁移组件）
 
-1. **spike 验证 actview 能力边界**（半天，写 `test/spike/` 一次性用例）：事件捕获阶段（onKeyDownCapture）、ref 属性、Teleport、provide/inject、SVG 属性、受控 input 双向。**缺口清单交 actview 仓库处理**。
-2. **建 `@actview/base-ui` 包骨架**（本仓库 `packages/base-ui`）+ 首批 3 个原语（button / separator / tooltip，作为标准实现范本）+ workspace 接入（pnpm-workspace.yaml / 根 package.json）。
-3. **React 参考 harness**（`test/fixtures/react-reference/`）：
-   - 冻结源组件副本（记录源仓库 commit hash，之后不改）；
-   - 自家 vite + React + tailwind v4 配置，alias 同源（`@/registry/bases/base/...`）；
-   - stub 掉 app 耦合：IconPlaceholder → 真实 lucide-react 图标、fonts/search-params → 固定值；
-   - 提供"状态矩阵渲染器"（每个组件 × 状态组合）输出 DOM 序列化与截图。
-4. **半自动转换脚本** `scripts/migrate-component.mjs`（机械转换 + 人工审查标记）：
+> **已落地（M0 实施记录）**：spike 用例 `test/spike/actview-capabilities.test.tsx`（9 用例，见 §8 结论）；`packages/base-ui` 骨架 + button/separator/tooltip 三个原语（workspace 链接，`pnpm-workspace.yaml` packages + 根 package.json `workspace:*`）；React 参考 harness（`test/fixtures/react-reference/`，vitest + happy-dom 内跑 React 19 + Base UI 1.6.0，独立配置 `vitest.react.config.ts` / `pnpm test:react-ref`）；token 同步脚本 `scripts/sync-style-tokens.mjs`（421 token 已同步，canonical = style-luma）；golden 采集/对比以 vitest 形式落地（`test/fixtures/react-reference/tests/golden-capture.test.tsx` 采集 → `test/fixtures/golden/*.html` 入库；`test/golden/golden-diff.test.tsx` 对比）。**首对 golden（button×3 + tooltip×2）5/5 逐字节一致。**
+>
+> M0 发现的框架层事实（已写入 §8 风险表与组件规范）：
+> - **props 合成必须用 computed**（或 JSX 内实时求值）：setup 只跑一次，mergeProps/mergeClassName 在 setup 体构造会快照过期；`computed(() => mergeProps(...))` 惰性追踪是标准解法（用户指定）。
+> - **最终 return 必须是 JSX（或条件 JSX/jsx 调用）**：defineComponentPlugin 只包装这种形态；`return () => {}` 不被识别（组件会以裸函数进入运行时）。
+> - `<Fragment>`/`<>` JSX 语法过不了 @actview/jsx 的 TS 类型（ElementType 不含 symbol）→ 用 `jsx(Fragment, { children })` 显式调用。
+> - 源 token 依赖 tw-animate-css（animate-in/fade-out 等）与自定义 @utility（no-scrollbar、animate-caret-blink）→ semantic styles.css 已带 `@import "tw-animate-css"`，自定义 utility 需随分发 base css 提供（见 M1 变量对齐任务）。
+> - v4 变量形态：`@theme inline` 桥接 `--color-*: var(--*)`，编译产物引用 `var(--primary)` 等原始名 → **M1 任务：themes.json/theme.ts 从 --color-* 改为原始变量名对齐 v4**（§3.8）。
+> - golden 归一化已覆盖：Base UI id 形态 `base-ui-_r_3_`/`_r_4_`、React 19 useId `«rN»`、浮层定位数值（left/top/transform）、测试容器 id。
+
+1. ~~**spike 验证 actview 能力边界**（半天，写 `test/spike/` 一次性用例）~~ ✅ 已落地
+2. ~~**建 `@actview/base-ui` 包骨架**（本仓库 `packages/base-ui`）+ 首批 3 个原语（button / separator / tooltip，作为标准实现范本）+ workspace 接入~~ ✅ 已落地
+3. **React 参考 harness**（`test/fixtures/react-reference/`）✅ 已落地（冻结源 commit `a85299a`，MANIFEST.json 记录；随迁移进度增量冻结）
+4. **半自动转换脚本** `scripts/migrate-component.mjs`（机械转换 + 人工审查标记，M0 剩余项）
    - 删 `"use client"`；`@base-ui/react/` → `@actview/base-ui/`；`@/app/(create)/components/icon-placeholder` → `@/registry/bases/base/components/icon-placeholder`；
    - `import * as React from "react"` → 按 hooks 映射表改写（`React.useState` → `ref` 等，输出 TODO 注释供人工核对）；
    - `className` → `class` 双写；`React.ComponentProps<"x">` → `@actview/jsx` 类型；
@@ -304,7 +310,7 @@ test/fixtures/
 
 | 风险 | 对策 |
 |---|---|
-| actview 缺捕获阶段事件/ref 语义 → 行为组件无法精确复刻 | Phase 0 spike 前置验证；缺口进 actview 仓库 backlog，阻塞项升级 |
+| actview 能力缺口 | spike 已验证：事件（含 Capture/非标准）、ref、Teleport、provide/useInjects、受控 input、Fragment 全部可用。两处缺口已定位并各有 workaround：① SVG camelCase 属性（strokeWidth）以原名 setAttribute → **JSX 写 kebab-case**（@actview/lucide 同法）② style 对象不支持 CSS 变量（--x）→ **原语层 ref + setProperty 命令式**（accordion 测量本就命令式）。两缺口进 actview 仓库 backlog（核心代码范畴），不阻塞迁移 |
 | Base UI 行为复刻不精确（焦点陷阱/指针捕获/滚动锁定） | 原语逐个对照 Base UI 源码实现，原语级 golden 状态矩阵覆盖键盘/指针路径 |
 | 源仓库持续升级导致漂移 | harness 冻结 commit hash 记录；升级时重跑全量 golden 再放行 |
 | happy-dom 覆盖不了真实样式 | 视觉回归层兜底（§6.4），CI 里 happy-dom 只跑结构断言 |

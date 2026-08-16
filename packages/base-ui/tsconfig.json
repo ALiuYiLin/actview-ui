@@ -1,0 +1,23 @@
+// @actview/base-ui 源码层规范（与 registry 组件一致）：
+//   - 函数组件 + useProps，不手写 defineComponent；
+//   - 消费方（vitest/vite）经 @actview/plugin-vite 的 defineComponentPlugin 转换；
+//   - 发布构建（build-base-ui.mjs）先跑同一 Babel 转换再 tsup 打包，
+//     使 dist 产物为 defineComponent 形态（@actview/lucide 同款做法）。
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "jsxImportSource": "@actview/jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "tsup.config.ts"]
+}

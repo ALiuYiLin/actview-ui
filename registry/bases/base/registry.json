@@ -11,8 +11,14 @@
     {
       "name": "button",
       "type": "registry:ui",
-      "dependencies": ["class-variance-authority"],
+      "dependencies": ["class-variance-authority", "@actview/base-ui"],
       "files": [{ "path": "ui/button.tsx", "type": "registry:ui" }]
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "dependencies": ["@actview/base-ui"],
+      "files": [{ "path": "ui/tooltip.tsx", "type": "registry:ui" }]
     },
     {
       "name": "separator",

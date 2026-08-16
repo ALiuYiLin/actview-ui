@@ -1,18 +1,18 @@
-// 复刻 shadcn/ui registry/bases/base/ui/button.tsx 的结构，框架层 actview：
-//   - actview 设计规范：源码层写普通函数组件 + useProps（props 响应式取值），
-//     Babel（@actview/plugin-babel 的 defineComponentPlugin）在构建期自动把
-//     函数组件转换为 defineComponent 形态——不手写 defineComponent。
-//   - useProps 返回 ComputedRef（.value 惰性求值并追踪依赖），解决
-//     setup 只执行一次导致的 props 解构快照问题（children/事件更新可达 render）。
-//   - className 用 actview 的 class（className 作 React 迁移兼容别名）。
-import { useProps } from "@actview/core"
+// 复刻 shadcn/ui registry/bases/base/ui/button.tsx（源 commit a85299a）的结构，
+// 框架层 actview：
+//   - 原语层 @actview/base-ui/button（复刻 Base UI DOM 契约：type=button/
+//     tabindex=0/disabled/data-disabled）
+//   - 规范写法：函数组件 + useProps（.value 惰性取值，class/className 双写，
+//     解构后不进 rest 透传避免 DOM 覆盖）
+import { Button as ButtonPrimitive } from "@actview/base-ui/button"
+import { computed, useProps } from "@actview/core"
 import { cva, type VariantProps } from "class-variance-authority"
 import type { ButtonHTMLAttributes } from "@actview/jsx"
 
 import { cn } from "@/registry/bases/base/lib/utils"
 
 const buttonVariants = cva(
-  "cn-button group/button inline-flex shrink-0",
+  "cn-button group/button inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -25,9 +25,13 @@ const buttonVariants = cva(
       },
       size: {
         default: "cn-button-size-default",
+        xs: "cn-button-size-xs",
         sm: "cn-button-size-sm",
         lg: "cn-button-size-lg",
         icon: "cn-button-size-icon",
+        "icon-xs": "cn-button-size-icon-xs",
+        "icon-sm": "cn-button-size-icon-sm",
+        "icon-lg": "cn-button-size-icon-lg",
       },
     },
     defaultVariants: {
@@ -53,14 +57,22 @@ function Button(
     className: undefined,
   })
 
+  // computed 惰性合并：setup 只跑一次，class 变更（含 React 迁移的 className
+  // 别名）在依赖变化时重算，mergeClassName 永不出现快照过期问题
+  const variantClassName = computed(() =>
+    cn(
+      buttonVariants({
+        variant: variant.value,
+        size: size.value,
+        className: cn(className.value, legacyClassName.value),
+      })
+    )
+  )
+
   return (
-    <button
+    <ButtonPrimitive
       data-slot="button"
-      class={cn(
-        buttonVariants({ variant: variant.value, size: size.value }),
-        className.value,
-        legacyClassName.value
-      )}
+      className={variantClassName.value}
       {...rest.value}
     />
   )
