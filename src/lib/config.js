@@ -11,7 +11,6 @@ export const DEFAULT_CONFIG = {
   $schema: "https://ui.shadcn.com/schema.json",
   style: "base-aurora",
   tsx: true,
-  iconLibrary: "lucide",
   aliases: {
     components: "@/components",
     utils: "@/lib/utils",

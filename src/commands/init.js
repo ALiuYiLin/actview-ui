@@ -1,5 +1,5 @@
 // actview-ui init —— 复刻 shadcn CLI 的 init 命令（最小版）：
-//   1. 在项目根写 components.json（默认 aliases + style + iconLibrary）
+//   1. 在项目根写 components.json（默认 aliases + style）
 //   2. 把包内最小 cn（utils）落到 aliases.utils 路径
 //
 // 用法：actview-ui init [--cwd <dir>] [--style <style>] [--yes]

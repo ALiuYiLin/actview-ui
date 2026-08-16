@@ -3,8 +3,11 @@
 //   2. 解析 registryDependencies 依赖树（依赖在前）
 //   3. 取包内 styles/<style>/ 产物（模拟注册表分发的 content）
 //   4. transformImports（registry 路径 → 用户 aliases）
-//   5. transformIcons（IconPlaceholder → 图标库组件）
-//   6. resolveFilePath 落盘（内容相同则 skip）
+//   5. resolveFilePath 落盘（内容相同则 skip）
+//
+// 注：框架层为 actview（普通函数组件 + class 属性 + jsxImportSource @actview/jsx），
+// 图标由 registry 分发的 icon-placeholder 组件提供，无 React 生态的
+// transform-icons 图标库注入步骤。
 //
 // 用法：actview-ui add <component...> [--cwd <dir>] [--style <style>] [--yes]
 import path from "node:path"
@@ -14,7 +17,6 @@ import { loadRegistry, resolveRegistryTree, STYLES_ROOT } from "../lib/registry.
 import {
   resolveFilePath,
   transformImports,
-  transformIcons,
   restoreRegistryImports,
   aliasToLocalDir,
 } from "../lib/transforms.js"
@@ -34,7 +36,8 @@ export async function runAddCommand(args) {
   console.log("┌─ actview-ui add ────────────────────────────────┐")
   console.log(`│ style: ${style}`)
 
-  const allDependencies = new Set()
+  // 框架依赖（registry 顶层）+ 各 item 的 dependencies
+  const allDependencies = new Set(registry.dependencies ?? [])
 
   for (const itemName of items) {
     // 依赖树：依赖在前（拓扑序）
@@ -63,11 +66,7 @@ export async function runAddCommand(args) {
           cwd
         )
 
-        const { transformed: importsDone, rewrites } = transformImports(
-          content,
-          config
-        )
-        const { transformed, icons } = transformIcons(importsDone, config)
+        const { transformed, rewrites } = transformImports(content, config)
 
         const relPath = path.relative(cwd, filePath).split(path.sep).join("/")
         let action = "create"
@@ -84,11 +83,6 @@ export async function runAddCommand(args) {
         console.log(`│ [${item.name}] ${file.path} → ${relPath}  [${action}]`)
         for (const { from, to } of rewrites) {
           console.log(`│   import: "${from}" → "${to}"`)
-        }
-        for (const icon of icons) {
-          console.log(
-            `│   icon  : IconPlaceholder → <${icon} /> (${config.iconLibrary ?? "lucide"})`
-          )
         }
       }
     }

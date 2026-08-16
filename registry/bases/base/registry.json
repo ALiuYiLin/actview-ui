@@ -1,6 +1,7 @@
 {
   "name": "@actview/ui",
   "homepage": "https://example.com",
+  "dependencies": ["actview", "@actview/jsx"],
   "items": [
     {
       "name": "button",
@@ -14,10 +15,17 @@
       "files": [{ "path": "ui/separator.tsx", "type": "registry:ui" }]
     },
     {
+      "name": "icon-placeholder",
+      "type": "registry:component",
+      "files": [
+        { "path": "components/icon-placeholder.tsx", "type": "registry:component" }
+      ]
+    },
+    {
       "name": "button-group",
       "type": "registry:ui",
-      "dependencies": ["class-variance-authority", "lucide-react"],
-      "registryDependencies": ["separator"],
+      "dependencies": ["class-variance-authority"],
+      "registryDependencies": ["separator", "icon-placeholder"],
       "files": [{ "path": "ui/button-group.tsx", "type": "registry:ui" }]
     }
   ]

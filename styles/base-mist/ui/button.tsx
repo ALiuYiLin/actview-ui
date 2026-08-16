@@ -1,10 +1,11 @@
-// 复刻 shadcn/ui registry/bases/base/ui/button.tsx 的结构：
-// 组件只写一次"骨架"，样式全部用 cn-* 语义占位符，
-// 由构建脚本按 style 定义替换成具体内容。
-//
-// 注意：本文件不需要真正运行，重点是结构复刻。
-import type { ButtonHTMLAttributes } from "react"
+// 复刻 shadcn/ui registry/bases/base/ui/button.tsx 的结构，
+// 框架层从 React 换成 actview：
+//   - 组件是普通函数组件（props 为第一个参数）
+//   - className 用 actview 的 class（className 作兼容别名）
+//   - 事件/属性透传为原生 DOM 语义（无合成事件）
+//   - 类型来自 @actview/jsx（jsxImportSource: "@actview/jsx"）
 import { cva, type VariantProps } from "class-variance-authority"
+import type { ButtonHTMLAttributes } from "@actview/jsx"
 
 import { cn } from "@/lib/utils"
 
@@ -34,18 +35,22 @@ const buttonVariants = cva(
   }
 )
 
-function Button({
-  className,
-  variant = "default",
-  size = "default",
-  ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> &
-  VariantProps<typeof buttonVariants>) {
+function Button(
+  props: ButtonHTMLAttributes & VariantProps<typeof buttonVariants>
+) {
+  const {
+    class: className,
+    className: legacyClassName,
+    variant = "default",
+    size = "default",
+    ...rest
+  } = props
+
   return (
     <button
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
+      class={cn(buttonVariants({ variant, size }), className, legacyClassName)}
+      {...rest}
     />
   )
 }

@@ -57,6 +57,15 @@ export function updateImportAliases(moduleSpecifier, config) {
     return config.aliases.utils
   }
   if (
+    config.aliases.components &&
+    moduleSpecifier.match(/^@\/registry\/[^/]+\/components/)
+  ) {
+    return moduleSpecifier.replace(
+      /^@\/registry\/[^/]+\/components/,
+      config.aliases.components
+    )
+  }
+  if (
     config.aliases.lib &&
     moduleSpecifier.match(/^@\/registry\/[^/]+\/lib/)
   ) {
@@ -121,62 +130,20 @@ export function transformImports(source, config) {
 }
 
 // ---------------------------------------------------------------------------
-// transformIcons：IconPlaceholder → 真实图标库组件 + import 注入
-// ---------------------------------------------------------------------------
-const ICON_LIBRARY_IMPORTS = {
-  lucide: "lucide-react",
-  tabler: "@tabler/icons-react",
-  hugeicons: "@hugeicons/react",
-  phosphor: "@phosphor-icons/react",
-  remixicon: "@remixicon/react",
-}
-
-export function transformIcons(source, config) {
-  const iconLibrary = config.iconLibrary ?? "lucide"
-  const usedIcons = new Set()
-
-  const withoutJsx = source.replace(
-    /<IconPlaceholder\s+([^/>]*)\s*\/>/g,
-    (match, props) => {
-      const attrRe = new RegExp(`${iconLibrary}="([^"]+)"`)
-      const iconName = props.match(attrRe)?.[1]
-      if (!iconName) {
-        throw new Error(`IconPlaceholder 缺少 ${iconLibrary} 属性：${match}`)
-      }
-      usedIcons.add(iconName)
-      return `<${iconName} />`
-    }
-  )
-
-  const withoutImport = withoutJsx
-    .split("\n")
-    .filter(
-      (line) =>
-        !line.includes("import { IconPlaceholder }") &&
-        !line.includes("import { IconPlaceholder,")
-    )
-    .join("\n")
-
-  if (usedIcons.size === 0) {
-    return { transformed: source, icons: [] }
-  }
-
-  const iconImport = `import { ${Array.from(usedIcons).sort().join(", ")} } from "${
-    ICON_LIBRARY_IMPORTS[iconLibrary]
-  }"`
-  const lines = withoutImport.split("\n")
-  const firstImportIndex = lines.findIndex((line) => line.startsWith("import"))
-  const insertAt = firstImportIndex === -1 ? 0 : firstImportIndex
-  lines.splice(insertAt, 0, iconImport)
-
-  return { transformed: lines.join("\n"), icons: Array.from(usedIcons) }
-}
-
-// ---------------------------------------------------------------------------
 // 还原 registry 形态：styles 产物（文档站形态）→ 分发给用户的 content 形态
+//
+// actview 图标方案说明：React 生态下 CLI 用 transform-icons 把 IconPlaceholder
+// 替换成图标库组件（lucide 等）并注入 import。actview 没有 React 生态图标库，
+// 图标由 registry 分发的 icon-placeholder 组件提供（SVG 字符串 + ref 注入
+// innerHTML），因此 CLI 不再做图标替换，只把其 import 还原成 registry 形态，
+// 走普通依赖安装（button-group 的 registryDependencies 已含 icon-placeholder）。
 // ---------------------------------------------------------------------------
 export function restoreRegistryImports(source, style) {
   return source
     .replaceAll(`@/styles/${style}/ui/`, `@/registry/${style}/ui/`)
+    .replaceAll(
+      "@/app/(create)/components/icon-placeholder",
+      `@/registry/${style}/components/icon-placeholder`
+    )
     .replaceAll("@/lib/utils", `@/registry/${style}/lib/utils`)
 }

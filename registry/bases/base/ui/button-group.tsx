@@ -1,12 +1,9 @@
-// 复刻 shadcn/ui registry/bases/base/ui/button-group.tsx 的结构：
-// - 一个 item 一个文件，跨 item 引用 separator（registryDependencies）
-// - cn-* 语义占位符（6 个新 token）
-// - IconPlaceholder（用户端 transform-icons 替换为真实图标）
-//
-// 与真实版的差异：@base-ui/react 的 mergeProps/useRender 换成原生 div + cn，
-// 以便零额外运行时依赖。
-import type { ComponentProps, HTMLAttributes } from "react"
+// 复刻 shadcn/ui registry/bases/base/ui/button-group.tsx 的结构（actview 版）：
+// - 跨 item 引用 separator（registryDependencies）
+// - IconPlaceholder（actview 图标方案：SVG 字符串 + ref 注入 innerHTML，
+//   由 registry 的 icon-placeholder 组件分发，CLI 不再做图标库 import 替换）
 import { cva, type VariantProps } from "class-variance-authority"
+import type { HTMLAttributes, PropsOf } from "@actview/jsx"
 
 import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
 import { cn } from "@/registry/bases/base/lib/utils"
@@ -24,57 +21,73 @@ const buttonGroupVariants = cva("cn-button-group flex w-fit items-stretch", {
   },
 })
 
-function ButtonGroup({
-  className,
-  orientation,
-  ...props
-}: HTMLAttributes<HTMLDivElement> &
-  VariantProps<typeof buttonGroupVariants>) {
+function ButtonGroup(
+  props: HTMLAttributes & VariantProps<typeof buttonGroupVariants>
+) {
+  const {
+    class: className,
+    className: legacyClassName,
+    orientation,
+    ...rest
+  } = props
+
   return (
     <div
       role="group"
       data-slot="button-group"
       data-orientation={orientation}
-      className={cn(buttonGroupVariants({ orientation }), className)}
-      {...props}
+      class={cn(
+        buttonGroupVariants({ orientation }),
+        className,
+        legacyClassName
+      )}
+      {...rest}
     />
   )
 }
 
-function ButtonGroupText({
-  className,
-  children,
-  ...props
-}: HTMLAttributes<HTMLDivElement>) {
+function ButtonGroupText(props: HTMLAttributes) {
+  const {
+    class: className,
+    className: legacyClassName,
+    children,
+    ...rest
+  } = props
+
   return (
     <div
       data-slot="button-group-text"
-      className={cn("cn-button-group-text flex items-center", className)}
-      {...props}
+      class={cn(
+        "cn-button-group-text flex items-center",
+        className,
+        legacyClassName
+      )}
+      {...rest}
     >
-      <IconPlaceholder
-        lucide="ChevronDown"
-        tabler="IconChevronDown"
-        hugeicons="ArrowDown01Icon"
-        phosphor="CaretDownIcon"
-        remixicon="RiArrowDownSLine"
-      />
+      <IconPlaceholder name="chevron-down" />
       {children}
     </div>
   )
 }
 
-function ButtonGroupSeparator({
-  className,
-  orientation = "vertical",
-  ...props
-}: ComponentProps<typeof Separator>) {
+function ButtonGroupSeparator(props: PropsOf<typeof Separator>) {
+  const {
+    class: className,
+    className: legacyClassName,
+    orientation = "vertical",
+    ...rest
+  } = props
+
   return (
     <Separator
       data-slot="button-group-separator"
       orientation={orientation}
-      className={cn("cn-button-group-separator relative self-stretch", className)}
-      {...props}
+      class={cn(
+        "cn-button-group-separator relative self-stretch",
+        className,
+        legacyClassName
+      )}
+      {...rest}
     />
   )
 }

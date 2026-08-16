@@ -2,7 +2,6 @@
   "$schema": "https://ui.shadcn.com/schema.json",
   "style": "base-mist",
   "tsx": true,
-  "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",
     "utils": "@/lib/utils",

@@ -5,6 +5,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
+    "jsxImportSource": "@actview/jsx",
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
@@ -12,9 +13,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
     "paths": {
-      // "@/*" 首选项目根；user-project 是嵌套的"用户项目"，
-      // 其内部产物 import "@/utilities/cn" 需要第二个候选才能解析。
       "@/*": ["./*", "./user-project/*"]
     }
   },

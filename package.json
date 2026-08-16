@@ -1,7 +1,7 @@
 {
   "name": "@actview/ui",
   "version": "0.1.0",
-  "description": "shadcn build-registry 最小复刻：registry + build 生成 styles，CLI 将组件落到用户侧",
+  "description": "actview 组件注册表 CLI：registry + build 生成 styles，CLI 将组件落到用户侧（shadcn build-registry 复刻，框架层 actview）",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -34,10 +34,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@types/react": "^19.0.0",
+    "@actview/jsx": "^1.0.17",
+    "actview": "^1.0.29",
     "class-variance-authority": "^0.7.1",
-    "lucide-react": "^1.31.0",
-    "react": "^19.0.0",
     "typescript": "^5.7.0"
   }
 }

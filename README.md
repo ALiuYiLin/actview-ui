@@ -1,15 +1,28 @@
-# actview-ui：shadcn build-registry 最小复刻
+# actview-ui：shadcn build-registry 最小复刻（框架层 actview）
 
-在 **button、separator、button-group 三个组件** 上复刻 shadcn/ui 的两段流水线。
-`button-group` 是"稍微复杂"的组件：跨 item 依赖（separator）、6 个新 token、
-IconPlaceholder 图标占位符 —— 把依赖树解析与图标替换两条机制都跑通。
+在 **button、separator、button-group、icon-placeholder 四个组件** 上复刻 shadcn/ui 的
+两段流水线，组件框架层为 **actview**（`E:\code3\actview`，npm 已发布
+`actview` / `@actview/jsx`）。`button-group` 是"稍微复杂"的组件：跨 item 依赖
+（separator + icon-placeholder）、6 个新 token —— 把依赖树解析与图标分发两条机制都跑通。
+
+## 框架差异（React → actview）
+
+| | React 版（原 shadcn 复刻） | actview 版（当前） |
+|---|---|---|
+| 组件定义 | `function Button(props)` + `"use client"` | 普通函数组件（props 为第一个参数，无 RSC 概念） |
+| className | `className={...}` | `class={...}`（`className` 作兼容别名解构） |
+| 事件 | 合成事件 `onClick` | 原生 DOM 事件 `onClick`（`@actview/jsx` 类型） |
+| JSX 配置 | `jsx: react-jsx` | `jsx: react-jsx` + `jsxImportSource: "@actview/jsx"` |
+| 组件类型 | `@types/react` | `import type { HTMLAttributes } from "@actview/jsx"` |
+| 图标 | transform-icons 替换成 lucide 等图标库组件 + import 注入 | icon-placeholder 组件随 registry 依赖分发，SVG 字符串经 ref 注入 innerHTML（renderer 为 HTML 命名空间，内联 SVG 子元素不渲染） |
+| cva | class-variance-authority（框架无关，保留） | 同左 |
 
 ## 第一段：base × style → 注册表产物（构建侧）
 
 ```
-registry/bases/base/registry.json（item 清单 + registryDependencies）
+registry/bases/base/registry.json（item 清单 + registryDependencies + 框架依赖）
         │
-        ├─ style-aurora.css ──► styles/base-aurora/{ui/button.tsx, ui/separator.tsx, ui/button-group.tsx}
+        ├─ style-aurora.css ──► styles/base-aurora/{ui/button.tsx, ui/separator.tsx, ui/button-group.tsx, components/icon-placeholder.tsx}
         ├─ style-ember.css  ──► styles/base-ember/...
         └─ style-mist.css   ──► styles/base-mist/...
 ```
@@ -20,23 +33,23 @@ registry/bases/base/registry.json（item 清单 + registryDependencies）
 actview-ui init（components.json + utils） + styles/base-<style>/**
         │
         └─► user-project/components/ui/{separator.tsx, button-group.tsx}
-            （依赖树解析：separator 先装；import 按 aliases 重写；
-              IconPlaceholder → lucide 图标）
+            + user-project/components/icon-placeholder.tsx
+            （依赖树解析：separator、icon-placeholder 先装；import 按 aliases 重写）
 
 ## 目录结构
 
 ```
 app/(create)/components/
-  icon-placeholder.tsx        # IconPlaceholder 占位组件（用户端被 transform-icons 替换）
+  icon-placeholder.tsx        # 文档站形态占位组件（actview 图标方案：SVG 字符串注入）
 bin/
   actview-ui.js                  # CLI 可执行入口（package.json bin: actview-ui）
 src/
   cli.js                      # 参数解析 + 子命令分发（init / add / help）
   commands/init.js            # actview-ui init：写 components.json + 安装 utils
-  commands/add.js             # actview-ui add：依赖树 + import 重写 + 图标替换 + 落盘
+  commands/add.js             # actview-ui add：依赖树 + import 重写 + 落盘
   lib/registry.js             # loadRegistry / resolveRegistryTree（包内资源定位）
   lib/config.js               # 用户配置读写（components.json 优先，user-config.json 回退）
-  lib/transforms.js           # resolveFilePath / transformImports / transformIcons
+  lib/transforms.js           # resolveFilePath / transformImports / restoreRegistryImports
 registry/
   bases/base/
     registry.json             # item 清单：button / separator / button-group（依赖 separator）
@@ -49,7 +62,7 @@ registry/
   styles/style-mist.css
 scripts/
   build.mjs                   # 第一段：base + style → styles/<style>/**
-package.json                  # react / cva / lucide-react / typescript + bin: actview-ui
+package.json                  # actview / @actview/jsx / cva / typescript + bin: actview-ui
 tsconfig.json                 # paths: "@/*" → ["./*", "./user-project/*"]
 lib/utils.ts                  # styles 产物 import "@/lib/utils" 的解析目标
 styles/                       # 第一段产物
@@ -81,13 +94,13 @@ user-project/                 # 演示用"用户项目"（由 CLI init + add 生
 | `getUserConfig()` | `packages/shadcn/src/utils/get-config.ts`（读 components.json） |
 | `resolveFilePath()` | `packages/shadcn/src/utils/updaters/update-files.ts`（type → 目标目录，path 公共段截取文件名） |
 | `transformImports()` | `packages/shadcn/src/utils/transformers/transform-import.ts`（`@/registry/...` → 用户 aliases） |
-| `transformIcons()` | `packages/shadcn/src/utils/transformers/transform-icons.ts`（IconPlaceholder → 图标库组件 + import 注入） |
+| ~~`transformIcons()`~~ | 原版 transform-icons（图标库组件 + import 注入）在 actview 下不适用：无 React 生态图标库，图标由 registry 分发的 icon-placeholder 组件提供（SVG 字符串 + ref 注入 innerHTML） |
 | 内容相同则 skip | `update-files.ts` 的 `isContentSame` 逻辑 |
 
 ## 运行
 
 ```bash
-npm install                      # 安装 react / cva / lucide-react / typescript（tsc 验证用）
+npm install                      # 安装 actview / @actview/jsx / cva / typescript（tsc 验证用）
 npm link                         # （可选）全局注册 actview-ui 命令
 
 # 第一段：生成 3 套 styles/base-<style>/**（9 个文件）
@@ -96,7 +109,7 @@ node scripts/build.mjs
 # 第二段：CLI（推荐）
 cd user-project
 actview-ui init --style base-mist                # 写 components.json + 安装 utils
-actview-ui add button-group                      # 依赖树解析 + import 重写 + 图标替换
+actview-ui add button-group                      # 依赖树解析 + import 重写（图标随 icon-placeholder 依赖安装）
 actview-ui add button separator                  # 一次安装多个组件
 actview-ui add button-group                      # 内容相同 → 全部 skip
 
