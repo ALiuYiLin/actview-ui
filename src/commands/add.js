@@ -28,8 +28,13 @@ export async function runAddCommand(args) {
   const style = args.style ?? config.style ?? "base-aurora"
   const registry = await loadRegistry()
 
+  // 已安装依赖检测（复刻 update-dependencies 的"检查"部分，只提示不安装）
+  const installed = await getInstalledDependencies(cwd)
+
   console.log("┌─ actview-ui add ────────────────────────────────┐")
   console.log(`│ style: ${style}`)
+
+  const allDependencies = new Set()
 
   for (const itemName of items) {
     // 依赖树：依赖在前（拓扑序）
@@ -39,6 +44,9 @@ export async function runAddCommand(args) {
     )
 
     for (const item of tree) {
+      for (const dep of item.dependencies ?? []) {
+        allDependencies.add(dep)
+      }
       for (const file of item.files) {
         // 包内 styles 产物（文档站形态）→ 还原为 registry 形态 content
         const stylesFile = new URL(
@@ -95,5 +103,37 @@ export async function runAddCommand(args) {
     }
   }
 
+  // npm 依赖报告（聚合全部 item 的 dependencies，去重）
+  if (allDependencies.size > 0) {
+    console.log(`│`)
+    console.log(`│ npm 依赖:`)
+    for (const dep of Array.from(allDependencies).sort()) {
+      const mark = installed.has(dep) ? "已装 ✓" : "缺失 ✗"
+      console.log(`│   ${mark.padEnd(7)} ${dep}`)
+    }
+    const missing = Array.from(allDependencies)
+      .filter((dep) => !installed.has(dep))
+      .sort()
+    if (missing.length > 0) {
+      console.log(`│`)
+      console.log(`│ 请安装缺失依赖: npm install ${missing.join(" ")}`)
+    }
+  }
+
   console.log("└──────────────────────────────────────────────────┘")
+}
+
+// 读取用户项目 package.json，返回 dependencies + devDependencies 键集合
+async function getInstalledDependencies(cwd) {
+  try {
+    const pkg = JSON.parse(
+      await readFile(path.join(cwd, "package.json"), "utf8")
+    )
+    return new Set([
+      ...Object.keys(pkg.dependencies ?? {}),
+      ...Object.keys(pkg.devDependencies ?? {}),
+    ])
+  } catch {
+    return new Set()
+  }
 }

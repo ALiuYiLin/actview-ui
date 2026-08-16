@@ -1,10 +1,11 @@
 {
-  "name": "actview-ui",
+  "name": "@actview/ui",
   "homepage": "https://example.com",
   "items": [
     {
       "name": "button",
       "type": "registry:ui",
+      "dependencies": ["class-variance-authority"],
       "files": [{ "path": "ui/button.tsx", "type": "registry:ui" }]
     },
     {
@@ -15,6 +16,7 @@
     {
       "name": "button-group",
       "type": "registry:ui",
+      "dependencies": ["class-variance-authority", "lucide-react"],
       "registryDependencies": ["separator"],
       "files": [{ "path": "ui/button-group.tsx", "type": "registry:ui" }]
     }
