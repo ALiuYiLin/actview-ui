@@ -1,68 +1,44 @@
-/* Style: aurora — 绿色玻璃拟态（自定义 CSS，不使用 tailwind） */
+/* Style: aurora — 绿色玻璃拟态（@apply tailwind 形式） */
 .cn-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  border-radius: 10px;
-  background: rgba(16, 185, 129, 0.08);
-  font-weight: 600;
-  transition: all 0.2s ease;
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/35 bg-emerald-500/10 font-semibold transition-all duration-200;
 }
 
 .cn-button-variant-default {
-  background: #10b981;
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+  @apply bg-emerald-500 text-white shadow-lg shadow-emerald-500/40;
 }
 
 .cn-button-variant-outline {
-  background: transparent;
-  color: #10b981;
+  @apply bg-transparent text-emerald-500;
 }
 
 .cn-button-variant-secondary {
-  background: #d1fae5;
-  color: #065f46;
+  @apply bg-emerald-100 text-emerald-900;
 }
 
 .cn-button-variant-ghost {
-  background: transparent;
-  color: #065f46;
+  @apply bg-transparent text-emerald-900;
 }
 
 .cn-button-variant-destructive {
-  background: #ef4444;
-  color: #ffffff;
+  @apply bg-red-500 text-white;
 }
 
 .cn-button-variant-link {
-  background: transparent;
-  color: #10b981;
-  text-decoration: underline;
+  @apply bg-transparent text-emerald-500 underline;
 }
 
 .cn-button-size-default {
-  height: 36px;
-  padding: 0 16px;
-  font-size: 14px;
+  @apply h-9 px-4 text-sm;
 }
 
 .cn-button-size-sm {
-  height: 28px;
-  padding: 0 12px;
-  font-size: 12px;
+  @apply h-7 px-3 text-xs;
 }
 
 .cn-button-size-lg {
-  height: 44px;
-  padding: 0 24px;
-  font-size: 16px;
+  @apply h-11 px-6 text-base;
 }
 
 .cn-button-size-icon {
-  width: 36px;
-  height: 36px;
-  padding: 0;
+  @apply size-9 p-0;
 }

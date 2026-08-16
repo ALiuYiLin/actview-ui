@@ -27,7 +27,7 @@ user-config.json（aliases 配置） + styles/base-<style>/ui/button.tsx
 registry/
   bases/base/ui/button.tsx    # 源头：cva + cn-* 占位符（复刻 shadcn 结构）
   bases/base/lib/utils.ts     # 最小 cn()
-  styles/style-aurora.css     # 3 套自定义样式（普通 CSS 声明，无 tailwind）
+  styles/style-aurora.css     # 3 套自定义样式（@apply tailwind 形式，同 shadcn 原版）
   styles/style-ember.css
   styles/style-mist.css
 scripts/
@@ -48,7 +48,7 @@ user-project/                 # 第二段产物（脚本生成）
 
 | 本仓库 | shadcn/ui 原版 | 差异 |
 |---|---|---|
-| `createStyleMap(css)` | `packages/shadcn/src/styles/create-style-map.ts`（postcss 提取 `@apply` 值） | 提取 `.cn-*` 规则块内的普通 CSS 声明文本 |
+| `createStyleMap(css)` | `packages/shadcn/src/styles/create-style-map.ts`（postcss 提取 `@apply` 值） | 正则提取 `.cn-*` 规则块内 `@apply` 的值（同 `extractTailwindClasses` 语义） |
 | `transformStyleMap(source, map)` | `packages/shadcn/src/styles/transform-style-map.ts`（ts-morph AST 遍历 cva） | 正则贪婪匹配替换字符串中的 `cn-*` token |
 | `rewriteRegistryImports(source)` | `apps/v4/scripts/build-registry.mts` 的 `copyUIToStyles` | `@/registry/bases/base/` → `@/` |
 
@@ -87,10 +87,10 @@ install.mjs 会先把 `@/lib/utils` 还原成 `@/registry/<style>/lib/utils`，
 
 ## 验证目标
 
-- 第一段：每个 `cn-*` token 都能逐字对应回各自的 style 定义，3 份产物互不相同。
+- 第一段：每个 `cn-*` token 都能逐字对应回各自的 style 定义（`@apply` 后的 tailwind 类），3 份产物互不相同。
 - 第二段：组件按用户配置落到本地路径，import 按用户 aliases 重写，
   内容相同则 skip、不同则 overwrite。
 
-生成物**不可运行**（className 里是 CSS 声明文本，仅作演示），
+生成物的 className 是 tailwind 类字符串，与 shadcn 原版产物形态一致；
 只验证字符串级对应关系 —— 这正是 shadcn「base 写行为骨架、style 决定外观、
 CLI 按用户配置落地」的核心机制。

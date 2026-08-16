@@ -35,7 +35,8 @@ const CN_TOKEN_RE = /\bcn-[a-z0-9-]+\b/g
 
 // ---------------------------------------------------------------------------
 // ① createStyleMap 的最小等价物：
-//    解析 style CSS，提取每个 .cn-* 规则块内的声明文本。
+//    解析 style CSS，提取每个 .cn-* 规则块内 @apply 指令的值。
+//    （对应原版 extractTailwindClasses：收集块内所有 @apply 的参数）
 // ---------------------------------------------------------------------------
 function createStyleMap(css) {
   const map = {}
@@ -46,7 +47,22 @@ function createStyleMap(css) {
 
   for (const match of withoutComments.matchAll(ruleRe)) {
     const className = match[1]
-    const declarations = match[2]
+    const block = match[2]
+
+    // 优先提取 @apply（tailwind 形式）
+    const applied = []
+    const applyRe = /@apply\s+([^;]+);?/g
+    for (const applyMatch of block.matchAll(applyRe)) {
+      applied.push(applyMatch[1].trim().replace(/\s+/g, " "))
+    }
+
+    if (applied.length > 0) {
+      map[className] = applied.join(" ")
+      continue
+    }
+
+    // 向后兼容：无 @apply 时回退到普通 CSS 声明文本
+    const declarations = block
       .split(";")
       .map((line) => line.trim())
       .filter(Boolean)

@@ -8,22 +8,22 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 10px; background: rgba(16, 185, 129, 0.08); font-weight: 600; transition: all 0.2s ease; group/button inline-flex shrink-0",
+  "inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/35 bg-emerald-500/10 font-semibold transition-all duration-200 group/button inline-flex shrink-0",
   {
     variants: {
       variant: {
-        default: "background: #10b981; color: #ffffff; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);",
-        outline: "background: transparent; color: #10b981;",
-        secondary: "background: #d1fae5; color: #065f46;",
-        ghost: "background: transparent; color: #065f46;",
-        destructive: "background: #ef4444; color: #ffffff;",
-        link: "background: transparent; color: #10b981; text-decoration: underline;",
+        default: "bg-emerald-500 text-white shadow-lg shadow-emerald-500/40",
+        outline: "bg-transparent text-emerald-500",
+        secondary: "bg-emerald-100 text-emerald-900",
+        ghost: "bg-transparent text-emerald-900",
+        destructive: "bg-red-500 text-white",
+        link: "bg-transparent text-emerald-500 underline",
       },
       size: {
-        default: "height: 36px; padding: 0 16px; font-size: 14px;",
-        sm: "height: 28px; padding: 0 12px; font-size: 12px;",
-        lg: "height: 44px; padding: 0 24px; font-size: 16px;",
-        icon: "width: 36px; height: 36px; padding: 0;",
+        default: "h-9 px-4 text-sm",
+        sm: "h-7 px-3 text-xs",
+        lg: "h-11 px-6 text-base",
+        icon: "size-9 p-0",
       },
     },
     defaultVariants: {
