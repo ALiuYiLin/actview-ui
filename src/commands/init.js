@@ -17,6 +17,9 @@ export async function runInitCommand(args) {
   const cwd = path.resolve(args.cwd ?? process.cwd())
   const style = args.style ?? DEFAULT_CONFIG.style
 
+  // 目标目录不存在时创建（真实 CLI 语义：init 就是初始化项目目录）
+  await mkdir(cwd, { recursive: true })
+
   // 已有配置：无 --yes 时拒绝覆盖（真实 init 会询问，这里直接报错提示）
   const existing = await findUserConfig(cwd)
   if (existing && !args.yes) {

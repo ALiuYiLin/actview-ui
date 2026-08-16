@@ -14,9 +14,9 @@
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@/*": ["./*", "./user-project/*"]
+      "@/*": ["./*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "dist", "user-project"]
+  "exclude": ["node_modules", "dist"]
 }

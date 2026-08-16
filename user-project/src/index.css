@@ -1,6 +1,0 @@
-@import "tailwindcss";
-
-/* 三套 style 构建物位于项目根之外（actview-ui/styles），
-   Tailwind v4 自动内容检测不覆盖；@source 相对本文件（src/）解析，
-   ../../styles 即 actview-ui/styles */
-@source "../../styles";

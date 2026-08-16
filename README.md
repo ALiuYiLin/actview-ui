@@ -6,8 +6,12 @@
 （separator）、6 个新 token、IconPlaceholder 图标占位符 —— 把依赖树解析与
 transform-icons 图标替换两条机制都跑通。
 
-> 依赖注意：`@actview/core` 需 `>=1.0.34`（修复 renderer 对 SVG 元素 set property
-> 的报错，`@actview/lucide` 的图标渲染依赖此修复）。
+> 依赖注意：`@actview/core` 需 `>=1.0.36`（SVG set property 修复 + `useProps`）。
+> **pnpm 项目必须保证单一 core 实例**：`actview@1.0.29` 内部依赖 `^1.0.32`，
+> pnpm 严格布局下会解析出第二个旧版 core，与组件 `useProps` 依赖的顶层版本
+> 形成两套响应式系统（children 更新失效）。本仓库已用
+> `pnpm-workspace.yaml` 的 `overrides` 强制 `@actview/core@1.0.36`；
+> 用户项目建议同样配置。
 
 ## 框架差异（React → actview）
 
@@ -36,7 +40,7 @@ registry/bases/base/registry.json（item 清单 + registryDependencies + 框架�
 ```
 actview-ui init（components.json + utils） + styles/base-<style>/**
         │
-        └─► user-project/components/ui/{separator.tsx, button-group.tsx}
+        └─► 用户项目 components/ui/{separator.tsx, button-group.tsx}
             （依赖树解析：separator 先装；import 按 aliases 重写；
               IconPlaceholder → @actview/lucide 图标组件）
 
@@ -66,24 +70,17 @@ registry/
   styles/style-mist.css
 scripts/
   build.mjs                   # 第一段：base + style → styles/<style>/**
-package.json                  # actview / @actview/jsx / cva / typescript + bin: actview-ui
-tsconfig.json                 # paths: "@/*" → ["./*", "./user-project/*"]
+  lib/build-registry.mjs      # 构建核心（可 import，供测试复用）
+package.json                  # packageManager: pnpm + bin: actview-ui
+pnpm-workspace.yaml           # minimumReleaseAge 排除 + core overrides（单一实例）
+tsconfig.json                 # paths: "@/*" → "./*"；jsxImportSource: "@actview/jsx"
+vitest.config.ts              # actviewPlugin() + happy-dom（组件测试）
 lib/utils.ts                  # styles 产物 import "@/lib/utils" 的解析目标
-styles/                       # 第一段产物
-  base-aurora/{ui/button.tsx, ui/separator.tsx, ui/button-group.tsx}
+styles/                       # 第一段产物（gitignore，pnpm build 生成）
+  base-aurora/{ui/button.tsx, ui/separator.tsx, ui/button-group.tsx, components/icon-placeholder.tsx}
   base-ember/...
   base-mist/...
-user-project/                 # 演示用"用户项目"（独立工程：actview + vite + tailwind）
-  components.json             # actview-ui init 生成
-  package.json                # actview / @actview/core(>=1.0.34) / @actview/jsx / @actview/lucide / cva / tailwind-merge + vite/tailwind
-  vite.config.ts              # actviewPlugin()（Babel defineComponent 转换，必需）+ tailwindcss()
-  tsconfig.json               # jsxImportSource: "@actview/jsx" + paths（@/*、@/styles/*）
-  index.html                  # #app 挂载点
-  src/main.tsx                # createApp(App).mount("#app")
-  src/App.tsx                 # 效果呈现页：三套 style 对比 + 响应式计数器
-  src/index.css               # @import "tailwindcss" + @source "../../styles"
-  components/ui/*.tsx         # actview-ui add 安装的组件（当前 style；图标已替换为 @actview/lucide）
-  lib/utils.ts                # actview-ui init 安装的 utils（cn = twMerge）
+test/                         # 三层测试（见下）
 ```
 
 ## 复刻点对照（对应真实 shadcn 代码）
@@ -110,7 +107,7 @@ user-project/                 # 演示用"用户项目"（独立工程：actview
 
 ## 测试系统
 
-三层结构，**不依赖 user-project**（它只作 example/人工验证）：
+三层结构（`test/`），全部走临时目录/直接调用，无外部示例项目依赖：
 
 ```
 test/
@@ -138,39 +135,29 @@ test/
   函数会以裸函数进运行时）
 
 ```bash
-npm test                 # vitest run（39 个用例）
-npm run test:watch       # watch 模式
+pnpm test                # vitest run（40 个用例）
+pnpm run test:watch      # watch 模式
 ```
 
 ## 运行
 
 ```bash
-npm install                      # 安装 actview / @actview/jsx / cva / typescript（tsc 验证用）
-npm link                         # （可选）全局注册 actview-ui 命令
+pnpm install                     # 安装 devDeps（actview 系 + vitest + typescript）
 
-# 第一段：生成 3 套 styles/base-<style>/**（9 个文件）
-node scripts/build.mjs
+# 第一段：生成 3 套 styles/base-<style>/**（12 个文件，gitignore 产物）
+pnpm build
 
-# 第二段：CLI（推荐）
-cd user-project
-actview-ui init --style base-mist                # 写 components.json + 安装 utils
-actview-ui add button-group                      # 依赖树解析 + import 重写 + 图标替换（@actview/lucide）
-actview-ui add button separator                  # 一次安装多个组件
-actview-ui add button-group                      # 内容相同 → 全部 skip
+# 第二段：CLI（对任意用户项目目录）
+node bin/actview-ui.js init --cwd /path/to/app --style base-mist
+node bin/actview-ui.js add button-group --cwd /path/to/app
 
-# 或在仓库根直接跑 demo（等价于上面 cwd=user-project 的 add）
-npm run install:demo
-
-# 全量类型检查（根 + user-project 独立工程）
-npx tsc --noEmit
-cd user-project && npx tsc --noEmit
-
-# 效果呈现页（user-project 独立 vite 工程，真实浏览器渲染）
-cd user-project
-npm install
-npm run dev          # http://localhost:5173（端口占用时 vite.config.ts 可调）
-npm run build        # tsc + vite build（Babel 转换 + tailwind 扫描的强验证）
+# 校验
+pnpm typecheck                   # tsc --noEmit
+pnpm test                        # 三层测试 40 用例
 ```
+
+> 发布（`pnpm publish`）由维护者手动执行；`prepublishOnly` 会自动
+> build + typecheck + test。
 
 CLI 与真实 shadcn 的对应：
 - `actview-ui init` ← `shadcn init`（写 components.json + 安装 utils）
@@ -185,7 +172,7 @@ CLI 与真实 shadcn 的对应：
 
 ```
 "@/registry/base-aurora/lib/utils"  ──aliases.utils──►  "@/lib/utils"
-"registry/base-aurora/ui/button.tsx" ──type+aliases.ui─►  user-project/components/ui/button.tsx
+"registry/base-aurora/ui/button.tsx" ──type+aliases.ui─►  <用户项目>/components/ui/button.tsx
 ```
 
 ## 验证目标

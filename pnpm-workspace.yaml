@@ -1,0 +1,18 @@
+# actview 生态包发布频繁（演示期间当天发布），
+# 排除 48h minimumReleaseAge 策略（同 shadcn 主仓库做法）。
+minimumReleaseAge: 2880
+minimumReleaseAgeExclude:
+  - "actview"
+  - "@actview/core"
+  - "@actview/jsx"
+  - "@actview/lucide"
+  - "@actview/testing"
+  - "@actview/plugin-vite"
+  - "@actview/plugin-babel"
+
+# 强制单一 @actview/core 实例：actview@1.0.29 内部依赖 ^1.0.32 会解析到
+# 旧版本，与组件 useProps 依赖的顶层版本形成两套响应式系统（pnpm 严格
+# 布局下不互通，children 更新失效）。统一到 1.0.36（含 SVG set property
+# 修复 + useProps）。
+overrides:
+  "@actview/core": "1.0.36"

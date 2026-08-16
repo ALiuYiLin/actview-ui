@@ -31,6 +31,13 @@ describe("CLI init", () => {
     await runInitCommand({ cwd: dir })
     await expect(runInitCommand({ cwd: dir })).rejects.toThrow(/--yes/)
   })
+
+  it("目标目录不存在时自动创建", async () => {
+    const nested = path.join(dir, "deep", "nested")
+    await runInitCommand({ cwd: nested, style: "base-mist" })
+    await access(path.join(nested, "components.json"))
+    await access(path.join(nested, "lib", "utils.ts"))
+  })
 })
 
 describe("CLI add", () => {
