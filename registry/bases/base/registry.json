@@ -1,7 +1,12 @@
 {
   "name": "@actview/ui",
   "homepage": "https://example.com",
-  "dependencies": ["actview", "@actview/jsx", "tailwind-merge"],
+  "dependencies": [
+    "actview",
+    "@actview/core",
+    "@actview/jsx",
+    "tailwind-merge"
+  ],
   "items": [
     {
       "name": "button",
@@ -17,6 +22,7 @@
     {
       "name": "icon-placeholder",
       "type": "registry:component",
+      "dependencies": ["@actview/lucide"],
       "files": [
         { "path": "components/icon-placeholder.tsx", "type": "registry:component" }
       ]
@@ -24,8 +30,8 @@
     {
       "name": "button-group",
       "type": "registry:ui",
-      "dependencies": ["class-variance-authority"],
-      "registryDependencies": ["separator", "icon-placeholder"],
+      "dependencies": ["class-variance-authority", "@actview/lucide"],
+      "registryDependencies": ["separator"],
       "files": [{ "path": "ui/button-group.tsx", "type": "registry:ui" }]
     }
   ]

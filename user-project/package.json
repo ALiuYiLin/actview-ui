@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@actview/core": "^1.0.34",
     "@actview/jsx": "^1.0.17",
+    "@actview/lucide": "^0.0.1",
     "actview": "^1.0.29",
     "class-variance-authority": "^0.7.1",
     "tailwind-merge": "^3.6.0"

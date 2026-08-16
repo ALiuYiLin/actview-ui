@@ -1,11 +1,11 @@
 // 复刻 shadcn/ui registry/bases/base/ui/button-group.tsx 的结构（actview 版）：
 // - 跨 item 引用 separator（registryDependencies）
-// - IconPlaceholder（actview 图标方案：SVG 字符串 + ref 注入 innerHTML，
-//   由 registry 的 icon-placeholder 组件分发，CLI 不再做图标库 import 替换）
+// - IconPlaceholder（用户端 transform-icons 按 iconLibrary 替换为
+//   @actview/lucide 图标组件并注入 import，复刻 shadcn 原版机制）
+import { ChevronDown } from "@actview/lucide"
 import { cva, type VariantProps } from "class-variance-authority"
 import type { HTMLAttributes, PropsOf } from "@actview/jsx"
 
-import { IconPlaceholder } from "@/components/icon-placeholder"
 import { cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 
@@ -64,7 +64,7 @@ function ButtonGroupText(props: HTMLAttributes) {
       )}
       {...rest}
     >
-      <IconPlaceholder name="chevron-down" />
+      <ChevronDown />
       {children}
     </div>
   )

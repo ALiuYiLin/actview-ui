@@ -30,5 +30,6 @@ export {
   resolveFilePath,
   updateImportAliases,
   transformImports,
+  transformIcons,
   restoreRegistryImports,
 } from "./lib/transforms.js"

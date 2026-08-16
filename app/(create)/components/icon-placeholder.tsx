@@ -1,27 +1,24 @@
 // 文档站形态的 IconPlaceholder（styles 产物 import 的解析目标）。
-// actview 图标方案：SVG 字符串经 ref 注入 innerHTML（renderer 是 HTML 命名空间，
-// 内联 JSX 的 SVG 子元素不会以 SVG 命名空间创建）。
+// @actview/lucide 是 lucide 的 actview 适配版（defineComponent 产物）。
+// CLI 用户端由 transform-icons 把 <IconPlaceholder lucide="X" /> 替换为
+// <X /> 并注入 import，本文件不会分发到用户项目。
 import type { HTMLAttributes } from "@actview/jsx"
+import { ChevronDown } from "@actview/lucide"
 
-const ICONS: Record<string, string> = {
-  "chevron-down":
-    '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+const ICON_COMPONENTS: Record<string, any> = {
+  ChevronDown,
 }
 
 export function IconPlaceholder(
-  props: HTMLAttributes & { name?: string }
+  props: HTMLAttributes & {
+    lucide?: string
+    tabler?: string
+    hugeicons?: string
+    phosphor?: string
+    remixicon?: string
+  }
 ) {
-  const name = props.name ?? "chevron-down"
-
-  return (
-    <span
-      data-icon="inline-start"
-      ref={(el: HTMLSpanElement | null) => {
-        if (el) {
-          el.innerHTML = ICONS[name] ?? ICONS["chevron-down"]
-        }
-      }}
-      style={{ display: "inline-flex", alignItems: "center" }}
-    />
-  )
+  const name = props.lucide ?? "ChevronDown"
+  const Icon = ICON_COMPONENTS[name] ?? ChevronDown
+  return <Icon />
 }
