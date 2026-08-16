@@ -201,3 +201,18 @@ export function restoreRegistryImports(source, style) {
     )
     .replaceAll("@/lib/utils", `@/registry/${style}/lib/utils`)
 }
+
+// ---------------------------------------------------------------------------
+// transformSemanticImports：语义类产物（路径②）的互引 → 用户 aliases
+//   @/styles/semantic/ui/xxx          → <aliases.ui>/xxx
+//   @/styles/semantic/components/xxx  → <aliases.components>/xxx
+//   （@/lib/utils 走 transformImports 现有分支 → aliases.utils）
+// ---------------------------------------------------------------------------
+export function transformSemanticImports(source, config) {
+  return source
+    .replaceAll("@/styles/semantic/ui/", `${config.aliases.ui}/`)
+    .replaceAll(
+      "@/styles/semantic/components/",
+      `${config.aliases.components}/`
+    )
+}

@@ -93,4 +93,32 @@ describe("CLI add", () => {
       runAddCommand({ cwd: dir, items: ["button"] })
     ).rejects.toThrow(/actview-ui init/)
   })
+
+  it("add --semantic：cn-* 保留 + 作用域样式表 + 占位组件落盘", async () => {
+    await runInitCommand({ cwd: dir, style: "base-aurora" })
+    await runAddCommand({ cwd: dir, items: ["button-group"], semantic: true })
+
+    const group = await readFile(
+      path.join(dir, "components", "ui", "button-group.tsx"),
+      "utf8"
+    )
+    // 语义类保留、图标不替换
+    expect(group).toContain("cn-button-group")
+    expect(group).toContain("<IconPlaceholder")
+    expect(group).toContain('from "@/components/ui/separator"')
+    expect(group).toContain('from "@/components/icon-placeholder"')
+    expect(group).not.toMatch(/import\s*\{[^}]*\}\s*from\s*"@actview\/lucide"/)
+
+    // semanticDependencies：icon-placeholder 组件落盘
+    await access(path.join(dir, "components", "icon-placeholder.tsx"))
+
+    // 作用域样式表落盘
+    const css = await readFile(
+      path.join(dir, "styles", "actview-ui.css"),
+      "utf8"
+    )
+    expect(css).toContain(".style-aurora")
+    expect(css).toContain(".style-ember")
+    expect(css).toContain(".style-mist")
+  })
 })

@@ -1,68 +1,72 @@
-/* Style: aurora — 绿色玻璃拟态（@apply tailwind 形式） */
-.cn-button {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/35 bg-emerald-500/10 font-semibold transition-all duration-200;
-}
-
-.cn-button-variant-default {
-  @apply bg-emerald-500 text-white shadow-lg shadow-emerald-500/40;
-}
-
-.cn-button-variant-outline {
-  @apply bg-transparent text-emerald-500;
-}
-
-.cn-button-variant-secondary {
-  @apply bg-emerald-100 text-emerald-900;
-}
-
-.cn-button-variant-ghost {
-  @apply bg-transparent text-emerald-900;
-}
-
-.cn-button-variant-destructive {
-  @apply bg-red-500 text-white;
-}
-
-.cn-button-variant-link {
-  @apply bg-transparent text-emerald-500 underline;
-}
-
-.cn-button-size-default {
-  @apply h-9 px-4 text-sm;
-}
-
-.cn-button-size-sm {
-  @apply h-7 px-3 text-xs;
-}
-
-.cn-button-size-lg {
-  @apply h-11 px-6 text-base;
-}
-
-.cn-button-size-icon {
-  @apply size-9 p-0;
-}
-
-.cn-button-group {
-  @apply inline-flex overflow-hidden rounded-xl border border-emerald-500/35 bg-emerald-500/10;
-}
-
-.cn-button-group-orientation-horizontal {
-  @apply flex-row;
-}
-
-.cn-button-group-orientation-vertical {
-  @apply gap-px;
-}
-
-.cn-button-group-text {
-  @apply px-3 text-sm font-medium text-emerald-900;
-}
-
-.cn-button-group-separator {
-  @apply bg-emerald-500/35;
-}
-
-.cn-separator {
-  @apply bg-emerald-500/35;
+/* 作用域样式表：body 挂 style-aurora class 时生效（自由切换机制，同 shadcn 文档站） */
+.style-aurora {
+  /* Style: aurora — 绿色玻璃拟态（@apply tailwind 形式） */
+  .cn-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/35 bg-emerald-500/10 font-semibold transition-all duration-200;
+  }
+  
+  .cn-button-variant-default {
+    @apply bg-emerald-500 text-white shadow-lg shadow-emerald-500/40;
+  }
+  
+  .cn-button-variant-outline {
+    @apply bg-transparent text-emerald-500;
+  }
+  
+  .cn-button-variant-secondary {
+    @apply bg-emerald-100 text-emerald-900;
+  }
+  
+  .cn-button-variant-ghost {
+    @apply bg-transparent text-emerald-900;
+  }
+  
+  .cn-button-variant-destructive {
+    @apply bg-red-500 text-white;
+  }
+  
+  .cn-button-variant-link {
+    @apply bg-transparent text-emerald-500 underline;
+  }
+  
+  .cn-button-size-default {
+    @apply h-9 px-4 text-sm;
+  }
+  
+  .cn-button-size-sm {
+    @apply h-7 px-3 text-xs;
+  }
+  
+  .cn-button-size-lg {
+    @apply h-11 px-6 text-base;
+  }
+  
+  .cn-button-size-icon {
+    @apply size-9 p-0;
+  }
+  
+  .cn-button-group {
+    @apply inline-flex overflow-hidden rounded-xl border border-emerald-500/35 bg-emerald-500/10;
+  }
+  
+  .cn-button-group-orientation-horizontal {
+    @apply flex-row;
+  }
+  
+  .cn-button-group-orientation-vertical {
+    @apply gap-px;
+  }
+  
+  .cn-button-group-text {
+    @apply px-3 text-sm font-medium text-emerald-900;
+  }
+  
+  .cn-button-group-separator {
+    @apply bg-emerald-500/35;
+  }
+  
+  .cn-separator {
+    @apply bg-emerald-500/35;
+  }
+  
 }

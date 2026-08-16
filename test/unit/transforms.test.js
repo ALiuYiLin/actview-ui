@@ -5,6 +5,7 @@ import {
   updateImportAliases,
   transformImports,
   transformIcons,
+  transformSemanticImports,
   restoreRegistryImports,
   resolveFilePath,
   resolveNestedFilePath,
@@ -106,6 +107,18 @@ describe("restoreRegistryImports", () => {
     expect(out).toContain("@/registry/base-aurora/ui/separator")
     expect(out).toContain("@/registry/base-aurora/components/icon-placeholder")
     expect(out).toContain("@/registry/base-aurora/lib/utils")
+  })
+})
+
+describe("transformSemanticImports", () => {
+  it("语义互引 → 用户 aliases（ui/components）", () => {
+    const source = [
+      'from "@/styles/semantic/ui/separator"',
+      'from "@/styles/semantic/components/icon-placeholder"',
+    ].join("\n")
+    const out = transformSemanticImports(source, config)
+    expect(out).toContain("@/components/ui/separator")
+    expect(out).toContain("@/components/icon-placeholder")
   })
 })
 

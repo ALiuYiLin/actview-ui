@@ -32,6 +32,7 @@
       "type": "registry:ui",
       "dependencies": ["class-variance-authority", "@actview/lucide"],
       "registryDependencies": ["separator"],
+      "semanticDependencies": ["icon-placeholder"],
       "files": [{ "path": "ui/button-group.tsx", "type": "registry:ui" }]
     }
   ]

@@ -25,15 +25,31 @@ transform-icons 图标替换两条机制都跑通。
 | 图标 | transform-icons 替换成 lucide 等图标库组件 + import 注入 | transform-icons 替换成 **@actview/lucide**（lucide 的 actview 适配版，defineComponent 产物）组件 + import 注入，机制与 shadcn 原版一致 |
 | cva | class-variance-authority（框架无关，保留） | 同左 |
 
-## 第一段：base × style → 注册表产物（构建侧）
+## 第一段：base × style → 两套注册表产物（构建侧）
 
 ```
 registry/bases/base/registry.json（item 清单 + registryDependencies + 框架依赖）
         │
-        ├─ style-aurora.css ──► styles/base-aurora/{ui/button.tsx, ui/separator.tsx, ui/button-group.tsx, components/icon-placeholder.tsx}
-        ├─ style-ember.css  ──► styles/base-ember/...
-        └─ style-mist.css   ──► styles/base-mist/...
+        ├─ style-aurora.css ──► styles/base-aurora/...   ← 路径①：cn-* 展开写死
+        ├─ style-ember.css  ──► styles/base-ember/...       （CLI add 分发）
+        ├─ style-mist.css   ──► styles/base-mist/...
+        │
+        └────────────────────► styles/semantic/...       ← 路径②：cn-* 保留
+                                （ui/*.tsx + styles.css）  （运行时自由切换）
 ```
+
+## 三条路径（对应 shadcn 的完整机制）
+
+| 路径 | 组件形态 | 样式来源 | 能否运行时切 style |
+|---|---|---|---|
+| ① CLI add | `cn-*` 已展开写死 | 组件 className 内联 | ❌（换 style = 重新 add） |
+| ② semantic（`--semantic`） | `cn-*` **语义类保留** | 作用域样式表（`.style-<name>` + body class） | ✅ 换 body class 即切换 |
+| ③ cssVars | ①产物 | 运行时 CSS 变量 | ⚠️ 仅颜色/圆角/暗色 |
+
+路径②复刻 shadcn 文档站/create 页机制：style css 以 `.style-<name>` 作用域
+嵌套包装，组件保留 `cn-*`，切换 = `<body class="style-aurora">` 换 class，
+组件树零重挂载。CLI 语义模式还会把 icon-placeholder 组件随依赖落盘
+（不跑 transform-icons）。
 
 ## 第二段：注册表产物 → 用户本地（安装侧，CLI）
 
@@ -135,7 +151,7 @@ test/
   函数会以裸函数进运行时）
 
 ```bash
-pnpm test                # vitest run（40 个用例）
+pnpm test                # vitest run（45 个用例）
 pnpm run test:watch      # watch 模式
 ```
 
@@ -150,6 +166,9 @@ pnpm build
 # 第二段：CLI（对任意用户项目目录）
 node bin/actview-ui.js init --cwd /path/to/app --style base-mist
 node bin/actview-ui.js add button-group --cwd /path/to/app
+node bin/actview-ui.js add button-group --cwd /path/to/app --semantic
+#   semantic：落盘 cn-* 组件 + styles/actview-ui.css（作用域样式表）；
+#   用户侧 <body class="style-aurora"> ↔ style-ember / style-mist 自由切换
 
 # 校验
 pnpm typecheck                   # tsc --noEmit

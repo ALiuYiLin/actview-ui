@@ -40,11 +40,13 @@
     "@actview/lucide": "^0.0.1",
     "@actview/plugin-vite": "^1.0.18",
     "@actview/testing": "^0.0.3",
+    "@tailwindcss/node": "^4.3.3",
     "@types/node": "^26.2.0",
     "actview": "^1.0.29",
     "class-variance-authority": "^0.7.1",
     "happy-dom": "^20.11.2",
     "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5.7.0",
     "vitest": "^4.1.10"
   }

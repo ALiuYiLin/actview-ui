@@ -99,6 +99,60 @@ export function verifyTokens(fileLabel, output) {
 }
 
 // ---------------------------------------------------------------------------
+// buildSemanticRegistry：路径②（自由切换预览）产物
+//   - 组件：cn-* 占位符**保留**（不展开），import 重写为 styles/semantic 体系
+//   - 样式表：全部 style 的作用域规则合并为 styles/semantic/styles.css
+//     用户侧 body 挂 style-<name> class 即切换整套视觉（同 shadcn 文档站机制）
+// ---------------------------------------------------------------------------
+export async function buildSemanticRegistry(options = {}) {
+  const root = options.root ?? DEFAULT_ROOT
+  const registryRoot = path.join(root, "registry", "bases", "base")
+  const registryFile = path.join(registryRoot, "registry.json")
+  const stylesDir = path.join(root, "registry", "styles")
+  const outputDir = path.join(root, "styles", "semantic")
+  const silent = options.silent ?? false
+
+  const registry = JSON.parse(await readFile(registryFile, "utf8"))
+  const styleFiles = (await readdir(stylesDir))
+    .filter((f) => f.startsWith("style-") && f.endsWith(".css"))
+    .sort()
+
+  const written = []
+
+  // 组件：cn-* 保留，只重写 import
+  for (const item of registry.items) {
+    for (const file of item.files) {
+      const sourcePath = path.join(registryRoot, file.path)
+      const source = await readFile(sourcePath, "utf8")
+      const output = rewriteRegistryImports(source, "semantic")
+
+      const outFile = path.join(outputDir, file.path)
+      await mkdir(path.dirname(outFile), { recursive: true })
+      await writeFile(outFile, output, "utf8")
+      written.push(path.relative(outputDir, outFile).split(path.sep).join("/"))
+    }
+  }
+
+  // 样式表：三套作用域规则合并（.style-<name> { ... }）
+  let css =
+    "/* @actview/ui 作用域样式表：body 挂 style-<name> class 切换整套视觉。\n   需要 tailwind 处理 @apply。*/\n"
+  for (const styleFile of styleFiles) {
+    css += `\n${await readFile(path.join(stylesDir, styleFile), "utf8")}\n`
+  }
+  const cssFile = path.join(outputDir, "styles.css")
+  await mkdir(outputDir, { recursive: true })
+  await writeFile(cssFile, css, "utf8")
+  written.push("styles.css")
+
+  if (!silent) {
+    console.log(
+      `✅ styles/semantic/  (${registry.items.length} items + styles.css)`
+    )
+  }
+  return written
+}
+
+// ---------------------------------------------------------------------------
 // buildRegistry：base × style → styles/base-<style>/**（返回产物文件清单）
 // ---------------------------------------------------------------------------
 export async function buildRegistry(options = {}) {

@@ -1,68 +1,72 @@
-/* Style: mist — 紫色胶囊柔和（@apply tailwind 形式） */
-.cn-button {
-  @apply inline-flex items-center justify-center gap-2.5 rounded-full border border-violet-500 bg-violet-50 font-medium transition-opacity duration-300;
-}
-
-.cn-button-variant-default {
-  @apply bg-violet-500 text-white shadow-lg shadow-violet-500/35;
-}
-
-.cn-button-variant-outline {
-  @apply bg-transparent text-violet-500;
-}
-
-.cn-button-variant-secondary {
-  @apply bg-violet-100 text-violet-900;
-}
-
-.cn-button-variant-ghost {
-  @apply bg-transparent text-violet-900;
-}
-
-.cn-button-variant-destructive {
-  @apply bg-rose-500 text-white;
-}
-
-.cn-button-variant-link {
-  @apply bg-transparent text-violet-500 underline decoration-wavy;
-}
-
-.cn-button-size-default {
-  @apply h-10 px-5 text-sm;
-}
-
-.cn-button-size-sm {
-  @apply h-[30px] px-3.5 text-xs;
-}
-
-.cn-button-size-lg {
-  @apply h-12 px-7 text-base;
-}
-
-.cn-button-size-icon {
-  @apply size-10 p-0;
-}
-
-.cn-button-group {
-  @apply inline-flex overflow-hidden rounded-full border border-violet-500 bg-violet-50;
-}
-
-.cn-button-group-orientation-horizontal {
-  @apply flex-row;
-}
-
-.cn-button-group-orientation-vertical {
-  @apply gap-1;
-}
-
-.cn-button-group-text {
-  @apply px-3.5 text-sm text-violet-900;
-}
-
-.cn-button-group-separator {
-  @apply bg-violet-500;
-}
-
-.cn-separator {
-  @apply bg-violet-500;
+/* 作用域样式表：body 挂 style-mist class 时生效（自由切换机制，同 shadcn 文档站） */
+.style-mist {
+  /* Style: mist — 紫色胶囊柔和（@apply tailwind 形式） */
+  .cn-button {
+    @apply inline-flex items-center justify-center gap-2.5 rounded-full border border-violet-500 bg-violet-50 font-medium transition-opacity duration-300;
+  }
+  
+  .cn-button-variant-default {
+    @apply bg-violet-500 text-white shadow-lg shadow-violet-500/35;
+  }
+  
+  .cn-button-variant-outline {
+    @apply bg-transparent text-violet-500;
+  }
+  
+  .cn-button-variant-secondary {
+    @apply bg-violet-100 text-violet-900;
+  }
+  
+  .cn-button-variant-ghost {
+    @apply bg-transparent text-violet-900;
+  }
+  
+  .cn-button-variant-destructive {
+    @apply bg-rose-500 text-white;
+  }
+  
+  .cn-button-variant-link {
+    @apply bg-transparent text-violet-500 underline decoration-wavy;
+  }
+  
+  .cn-button-size-default {
+    @apply h-10 px-5 text-sm;
+  }
+  
+  .cn-button-size-sm {
+    @apply h-[30px] px-3.5 text-xs;
+  }
+  
+  .cn-button-size-lg {
+    @apply h-12 px-7 text-base;
+  }
+  
+  .cn-button-size-icon {
+    @apply size-10 p-0;
+  }
+  
+  .cn-button-group {
+    @apply inline-flex overflow-hidden rounded-full border border-violet-500 bg-violet-50;
+  }
+  
+  .cn-button-group-orientation-horizontal {
+    @apply flex-row;
+  }
+  
+  .cn-button-group-orientation-vertical {
+    @apply gap-1;
+  }
+  
+  .cn-button-group-text {
+    @apply px-3.5 text-sm text-violet-900;
+  }
+  
+  .cn-button-group-separator {
+    @apply bg-violet-500;
+  }
+  
+  .cn-separator {
+    @apply bg-violet-500;
+  }
+  
 }

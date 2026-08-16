@@ -26,6 +26,7 @@ init 参数:
 add 参数:
   --cwd <dir>        项目目录（默认当前目录）
   --style <style>    覆盖配置里的 style
+  --semantic         路径②：cn-* 保留 + 作用域样式表（body class 自由切换 style）
   --yes              已存在的文件直接覆盖（不 skip）
 
 可用组件: button / separator / button-group
@@ -41,6 +42,8 @@ function parseArgs(argv) {
       args.version = true
     } else if (arg === "--yes" || arg === "-y") {
       args.yes = true
+    } else if (arg === "--semantic") {
+      args.semantic = true
     } else if (arg === "--cwd" || arg === "-c") {
       args.cwd = argv[++i]
     } else if (arg === "--style" || arg === "-s") {
