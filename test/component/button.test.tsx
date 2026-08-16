@@ -42,22 +42,22 @@ describe("Button（styles/base-aurora/ui/button.tsx 构建物）", () => {
     expect(btn.className).toContain("bg-transparent")
   })
 
-  it("点击事件触发（actview 响应式更新）", async () => {
-    // 状态文本放在父组件（真实用户用法）：组件边界的 children 更新依赖
-    // 框架调度细节，父级持有的响应式文本是稳定断言对象。
+  it("点击事件触发（actview 响应式更新，useProps 使 children 更新可达 render）", async () => {
+    // 状态文本直接放在 Button children 内：只有 useProps（rest.value.children
+    // 为响应式活引用）才能让父级重渲染后的新 children 进入组件 render。
+    // 简写快照解构写法在此场景会失败（历史缺陷回归测试）。
     function Demo() {
       const state = reactive({ clicked: false })
       return (
-        <div>
-          <span class="status">{state.clicked ? "clicked" : "idle"}</span>
-          <Button onClick={() => (state.clicked = true)}>click me</Button>
-        </div>
+        <Button onClick={() => (state.clicked = true)}>
+          click{state.clicked ? "ed" : ""}
+        </Button>
       )
     }
     const { container } = render(Demo)
     fireEvent(container.querySelector("button")!, "click")
     await waitFor(() =>
-      expect(container.querySelector(".status")!.textContent).toBe("clicked")
+      expect(container.querySelector("button")!.textContent).toContain("clicked")
     )
   })
 

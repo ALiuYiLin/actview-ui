@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@actview/core": "^1.0.34",
+    "@actview/core": "^1.0.36",
     "@actview/jsx": "^1.0.17",
     "@actview/lucide": "^0.0.1",
     "actview": "^1.0.29",

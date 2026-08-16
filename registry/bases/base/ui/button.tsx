@@ -1,11 +1,11 @@
 // 复刻 shadcn/ui registry/bases/base/ui/button.tsx 的结构，框架层 actview：
-//   - actview 组件标准写法：defineComponent + setup 返回 render 函数。
-//     简写函数组件经 defineComponentPlugin 转换后，函数体内的 props 解构是
-//     setup 一次性快照（children/事件等 props 更新不会进入 render）；
-//     因此在 render 内每次从 props 解构（@actview/lucide 同款写法）。
-//   - className 用 actview 的 class（className 作兼容别名）
-//   - 类型来自 @actview/jsx（jsxImportSource: "@actview/jsx"）
-import { defineComponent } from "actview"
+//   - actview 设计规范：源码层写普通函数组件 + useProps（props 响应式取值），
+//     Babel（@actview/plugin-babel 的 defineComponentPlugin）在构建期自动把
+//     函数组件转换为 defineComponent 形态——不手写 defineComponent。
+//   - useProps 返回 ComputedRef（.value 惰性求值并追踪依赖），解决
+//     setup 只执行一次导致的 props 解构快照问题（children/事件更新可达 render）。
+//   - className 用 actview 的 class（className 作 React 迁移兼容别名）。
+import { useProps } from "@actview/core"
 import { cva, type VariantProps } from "class-variance-authority"
 import type { ButtonHTMLAttributes } from "@actview/jsx"
 
@@ -37,27 +37,33 @@ const buttonVariants = cva(
   }
 )
 
-const Button = defineComponent(
-  (props: ButtonHTMLAttributes & VariantProps<typeof buttonVariants>) => {
-    return () => {
-      const {
-        class: className,
-        className: legacyClassName,
-        variant = "default",
-        size = "default",
-        ...rest
-      } = props
+function Button(
+  props: ButtonHTMLAttributes & VariantProps<typeof buttonVariants>
+) {
+  const {
+    variant,
+    size,
+    class: className,
+    className: legacyClassName,
+    rest,
+  } = useProps(props, {
+    variant: (v) => v ?? "default",
+    size: (v) => v ?? "default",
+    class: undefined,
+    className: undefined,
+  })
 
-      return (
-        <button
-          data-slot="button"
-          class={cn(buttonVariants({ variant, size }), className, legacyClassName)}
-          {...rest}
-        />
-      )
-    }
-  },
-  "Button"
-)
+  return (
+    <button
+      data-slot="button"
+      class={cn(
+        buttonVariants({ variant: variant.value, size: size.value }),
+        className.value,
+        legacyClassName.value
+      )}
+      {...rest.value}
+    />
+  )
+}
 
 export { Button, buttonVariants }

@@ -1,38 +1,39 @@
 // 复刻 shadcn/ui registry/bases/base/ui/separator.tsx 的结构（actview 版）。
-// defineComponent + render 内解构 props（避免 setup 快照，见 button.tsx 注释）。
-import { defineComponent } from "actview"
+// 规范写法：函数组件 + useProps（Babel 自动转 defineComponent，见 button.tsx 注释）。
+import { useProps } from "@actview/core"
 import type { HTMLAttributes } from "@actview/jsx"
 
 import { cn } from "@/registry/bases/base/lib/utils"
 
-const Separator = defineComponent(
-  (props: HTMLAttributes & { orientation?: "horizontal" | "vertical" }) => {
-    return () => {
-      const {
-        class: className,
-        className: legacyClassName,
-        orientation = "horizontal",
-        ...rest
-      } = props
+function Separator(
+  props: HTMLAttributes & { orientation?: "horizontal" | "vertical" }
+) {
+  const {
+    orientation,
+    class: className,
+    className: legacyClassName,
+    rest,
+  } = useProps(props, {
+    orientation: (v) => v ?? "horizontal",
+    class: undefined,
+    className: undefined,
+  })
 
-      return (
-        <div
-          role="separator"
-          data-slot="separator"
-          aria-orientation={orientation}
-          data-orientation={orientation}
-          class={cn(
-            "cn-separator shrink-0",
-            orientation === "horizontal" ? "h-px w-full" : "w-px self-stretch",
-            className,
-            legacyClassName
-          )}
-          {...rest}
-        />
-      )
-    }
-  },
-  "Separator"
-)
+  return (
+    <div
+      role="separator"
+      data-slot="separator"
+      aria-orientation={orientation.value}
+      data-orientation={orientation.value}
+      class={cn(
+        "cn-separator shrink-0",
+        orientation.value === "horizontal" ? "h-px w-full" : "w-px self-stretch",
+        className.value,
+        legacyClassName.value
+      )}
+      {...rest.value}
+    />
+  )
+}
 
 export { Separator }

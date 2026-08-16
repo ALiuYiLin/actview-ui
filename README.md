@@ -13,7 +13,7 @@ transform-icons 图标替换两条机制都跑通。
 
 | | React 版（原 shadcn 复刻） | actview 版（当前） |
 |---|---|---|
-| 组件定义 | `function Button(props)` + `"use client"` | 普通函数组件（props 为第一个参数，无 RSC 概念） |
+| 组件定义 | `function Button(props)` + `"use client"` | 普通函数组件 + `useProps`（props 响应式取值），Babel（defineComponentPlugin）自动转 defineComponent——源码层不手写 defineComponent |
 | className | `className={...}` | `class={...}`（`className` 作兼容别名解构） |
 | 事件 | 合成事件 `onClick` | 原生 DOM 事件 `onClick`（`@actview/jsx` 类型） |
 | JSX 配置 | `jsx: react-jsx` | `jsx: react-jsx` + `jsxImportSource: "@actview/jsx"` |
@@ -127,9 +127,11 @@ test/
 
 - **vitest 挂 `actviewPlugin()`**（`vitest.config.ts`）：测试与被测 TSX 经 Babel
   defineComponent 转换（同 actview 主仓库做法）
-- **组件必须用 `defineComponent` + render 内解构 props**：简写函数组件经插件转换后
-  函数体内的 props 解构是 setup 一次性快照，children/事件更新不会进入 render；
-  render 内每次解构才是 actview 的正确写法（@actview/lucide 同款）
+- **组件必须用 actview 规范写法：函数组件 + `useProps`**（props 响应式取值，
+  Babel 自动转 defineComponent）。useProps 返回 ComputedRef（`.value` 惰性求值
+  并追踪依赖），解决 setup 只执行一次导致的 props 解构快照问题——children/事件
+  更新可达 render。`useProps` 从 `@actview/core` 导入（actview 主包发布版尚未
+  re-export，core >=1.0.36 提供）
 - **避免 `new URL(..., import.meta.url)`**：vite/vitest 会把它当静态资产转换破坏
   file: scheme；资源定位统一用 `fileURLToPath + path`
 - L2 传给 `render()` 的组件必须是**函数声明**（插件只转换声明/赋值形态，内联箭头
