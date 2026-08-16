@@ -11,35 +11,82 @@
     {
       "name": "button",
       "type": "registry:ui",
-      "dependencies": ["class-variance-authority", "@actview/base-ui"],
-      "files": [{ "path": "ui/button.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "class-variance-authority",
+        "@actview/base-ui"
+      ],
+      "files": [
+        {
+          "path": "ui/button.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "tooltip",
       "type": "registry:ui",
-      "dependencies": ["@actview/base-ui"],
-      "files": [{ "path": "ui/tooltip.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "@actview/base-ui"
+      ],
+      "files": [
+        {
+          "path": "ui/tooltip.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "separator",
       "type": "registry:ui",
-      "files": [{ "path": "ui/separator.tsx", "type": "registry:ui" }]
+      "files": [
+        {
+          "path": "ui/separator.tsx",
+          "type": "registry:ui"
+        }
+      ]
     },
     {
       "name": "icon-placeholder",
       "type": "registry:component",
-      "dependencies": ["@actview/lucide"],
+      "dependencies": [
+        "@actview/lucide"
+      ],
       "files": [
-        { "path": "components/icon-placeholder.tsx", "type": "registry:component" }
+        {
+          "path": "components/icon-placeholder.tsx",
+          "type": "registry:component"
+        }
       ]
     },
     {
       "name": "button-group",
       "type": "registry:ui",
-      "dependencies": ["class-variance-authority", "@actview/lucide"],
-      "registryDependencies": ["separator"],
-      "semanticDependencies": ["icon-placeholder"],
-      "files": [{ "path": "ui/button-group.tsx", "type": "registry:ui" }]
+      "dependencies": [
+        "class-variance-authority",
+        "@actview/lucide"
+      ],
+      "registryDependencies": [
+        "separator"
+      ],
+      "semanticDependencies": [
+        "icon-placeholder"
+      ],
+      "files": [
+        {
+          "path": "ui/button-group.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    },
+    {
+      "name": "utils",
+      "type": "registry:lib",
+      "files": [
+        {
+          "path": "lib/utils.ts",
+          "type": "registry:lib"
+        }
+      ]
     }
   ]
 }

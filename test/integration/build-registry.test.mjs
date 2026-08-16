@@ -16,9 +16,9 @@ const STYLES_ROOT = path.join(
 )
 
 describe("buildRegistry（路径①：展开产物）", () => {
-  it("产物 15 文件（3 style × 5 items）、无 cn-* 残留、三套 style 互异", async () => {
+  it("产物 18 文件（3 style × 6 items）、无 cn-* 残留、展开产物三套一致", async () => {
     const written = await buildRegistry({ silent: true })
-    expect(written).toHaveLength(15)
+    expect(written).toHaveLength(18)
 
     for (const file of written) {
       const content = await readFile(path.join(STYLES_ROOT, file), "utf8")
