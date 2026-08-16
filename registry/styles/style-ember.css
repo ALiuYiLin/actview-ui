@@ -42,3 +42,27 @@
 .cn-button-size-icon {
   @apply size-8 p-0;
 }
+
+.cn-button-group {
+  @apply inline-flex overflow-hidden rounded-none border-2 border-red-600 bg-red-50;
+}
+
+.cn-button-group-orientation-horizontal {
+  @apply flex-row;
+}
+
+.cn-button-group-orientation-vertical {
+  @apply gap-0.5;
+}
+
+.cn-button-group-text {
+  @apply px-2.5 text-[13px] font-bold uppercase tracking-wide text-red-900;
+}
+
+.cn-button-group-separator {
+  @apply bg-red-600;
+}
+
+.cn-separator {
+  @apply bg-red-600;
+}

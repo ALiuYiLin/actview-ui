@@ -1,33 +1,27 @@
 // 最小复刻 shadcn/ui 的 build-registry 管线（纯 Node，零依赖）：
 //
-//   createStyleMap()      ← 复刻 packages/shadcn/src/styles/create-style-map.ts
-//                           （postcss 解析 .cn-* 规则 → 提取声明文本）
-//   transformStyleMap()   ← 复刻 packages/shadcn/src/styles/transform-style-map.ts
-//                           （把 base 源码中的 cn-* 占位符替换为声明文本）
-//   copyUIToStyles()      ← 复刻 apps/v4/scripts/build-registry.mts
-//                           （重写 import 路径 + 写出 styles/<style>/ui/*）
+//   registry.json         ← 复刻 registry/bases/<base>/registry.ts（item 清单）
+//   createStyleMap()      ← 复刻 create-style-map.ts（提取 .cn-* 块内 @apply 值）
+//   transformStyleMap()   ← 复刻 transform-style-map.ts（cn-* token → 类字符串）
+//   rewriteRegistryImports() ← 复刻 copyUIToStyles（registry 路径 → styles 路径）
 //
-// 与原版的差异（有意最小化）：
-//   - 不用 tailwind 的 @apply，style 规则块内是普通 CSS 声明
-//   - 不用 ts-morph AST，用正则直接替换字符串字面量中的 cn-* token
-//   - 不生成 registry.json / content，只生成 styles/base-<style>/ui/button.tsx
+// 输入：
+//   - registry/bases/base/registry.json   组件清单（name/type/files/registryDependencies）
+//   - registry/bases/base/**              组件源头（cn-* 占位符 + IconPlaceholder）
+//   - registry/styles/style-*.css         每套 style 的 token 定义（@apply 形式）
 //
-// 产物不可运行（className 里是 CSS 声明文本），但每个 cn-* token 都能
-// 逐字对应回各自的 style 定义 —— 这正是本次要验证的目标。
+// 输出：
+//   styles/base-<style>/**                每个 item 每个文件一份（样式已内联）
+//
+// 用法：node scripts/build.mjs
 
 import { readdir, readFile, writeFile, mkdir } from "node:fs/promises"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
-const BASE_SOURCE = path.join(
-  ROOT,
-  "registry",
-  "bases",
-  "base",
-  "ui",
-  "button.tsx"
-)
+const REGISTRY_ROOT = path.join(ROOT, "registry", "bases", "base")
+const REGISTRY_FILE = path.join(REGISTRY_ROOT, "registry.json")
 const STYLES_DIR = path.join(ROOT, "registry", "styles")
 const OUTPUT_DIR = path.join(ROOT, "styles")
 
@@ -75,7 +69,7 @@ function createStyleMap(css) {
 
 // ---------------------------------------------------------------------------
 // ② transformStyleMap 的最小等价物：
-//    把 base 源码里所有 cn-* token 替换为 styleMap 中对应的声明文本。
+//    把源码里所有 cn-* token 替换为 styleMap 中对应的 @apply 类字符串。
 //    （正则贪婪匹配保证 cn-button-variant-default 不会先被 cn-button 截断）
 // ---------------------------------------------------------------------------
 function transformStyleMap(source, styleMap) {
@@ -92,84 +86,88 @@ function transformStyleMap(source, styleMap) {
 
 // ---------------------------------------------------------------------------
 // ③ copyUIToStyles 的最小等价物：
-//    重写 registry 内部路径为产物路径（@/registry/bases/base/ → @/）。
+//    registry 内部路径 → styles 产物路径（产物目录名带 base- 前缀）：
+//      @/registry/bases/base/ui/xxx      → @/styles/base-<style>/ui/xxx（ui 互引）
+//      @/registry/bases/base/lib/utils   → @/lib/utils
+//      其余 @/registry/bases/base/       → @/
 // ---------------------------------------------------------------------------
-function rewriteRegistryImports(source) {
-  return source.replaceAll("@/registry/bases/base/", "@/")
+function rewriteRegistryImports(source, outputStyleName) {
+  return source
+    .replaceAll(
+      "@/registry/bases/base/ui/",
+      `@/styles/${outputStyleName}/ui/`
+    )
+    .replaceAll("@/registry/bases/base/lib/utils", "@/lib/utils")
+    .replaceAll("@/registry/bases/base/", "@/")
 }
 
 // ---------------------------------------------------------------------------
-// 验证：产物字符串必须与 style 定义"对应上"
+// 验证：产物字符串必须与 style 定义"对应上"（无残留占位符）
 // ---------------------------------------------------------------------------
-function verify(styleName, source, output) {
-  const tokens = Array.from(new Set(source.match(CN_TOKEN_RE) ?? []))
-
-  // 1. 产物里不允许残留任何 cn-* 占位符
+function verifyTokens(fileLabel, output) {
   const leftovers = output.match(CN_TOKEN_RE) ?? []
   if (leftovers.length > 0) {
     throw new Error(
-      `[${styleName}] 产物中残留未替换占位符: ${leftovers.join(", ")}`
+      `[${fileLabel}] 产物中残留未替换占位符: ${leftovers.join(", ")}`
     )
   }
-
-  return tokens
 }
 
 async function main() {
-  const baseSource = await readFile(BASE_SOURCE, "utf8")
+  const registry = JSON.parse(await readFile(REGISTRY_FILE, "utf8"))
   const styleFiles = (await readdir(STYLES_DIR))
     .filter((f) => f.startsWith("style-") && f.endsWith(".css"))
     .sort()
 
-  const outputs = []
-  const report = {}
+  let totalFiles = 0
 
   for (const styleFile of styleFiles) {
     const styleName = styleFile.replace(/^style-/, "").replace(/\.css$/, "")
+    const outputStyleName = `base-${styleName}`
     const css = await readFile(path.join(STYLES_DIR, styleFile), "utf8")
-
     const styleMap = createStyleMap(css)
-    const replaced = transformStyleMap(baseSource, styleMap)
-    const tokens = verify(styleName, baseSource, replaced)
-    const output = rewriteRegistryImports(replaced)
 
-    const outFile = path.join(OUTPUT_DIR, `base-${styleName}`, "ui", "button.tsx")
-    await mkdir(path.dirname(outFile), { recursive: true })
-    await writeFile(outFile, output, "utf8")
+    for (const item of registry.items) {
+      for (const file of item.files) {
+        const sourcePath = path.join(REGISTRY_ROOT, file.path)
+        const source = await readFile(sourcePath, "utf8")
 
-    outputs.push(outFile)
-    report[styleName] = { styleMap, tokens, outFile }
-    console.log(`✅ styles/base-${styleName}/ui/button.tsx  (${tokens.length} 个 token)`)
+        const replaced = transformStyleMap(source, styleMap)
+        const output = rewriteRegistryImports(replaced, outputStyleName)
+
+        const outFile = path.join(OUTPUT_DIR, outputStyleName, file.path)
+        await mkdir(path.dirname(outFile), { recursive: true })
+        await writeFile(outFile, output, "utf8")
+
+        verifyTokens(
+          `${outputStyleName}/${file.path}`,
+          output
+        )
+        totalFiles++
+      }
+    }
+    console.log(`✅ styles/${outputStyleName}/  (${registry.items.length} items)`)
   }
 
-  // 三套产物两两不同（证明 style 真正生效了）
-  const contents = {}
-  for (const [name, { outFile }] of Object.entries(report)) {
-    contents[name] = await readFile(outFile, "utf8")
+  // 同一 style 下三份产物两两不同（证明 style 真正生效）
+  const samples = {}
+  for (const styleFile of styleFiles) {
+    const styleName = styleFile.replace(/^style-/, "").replace(/\.css$/, "")
+    samples[styleName] = await readFile(
+      path.join(OUTPUT_DIR, `base-${styleName}`, "ui", "button-group.tsx"),
+      "utf8"
+    )
   }
-  const names = Object.keys(contents)
+  const names = Object.keys(samples)
   for (let i = 0; i < names.length; i++) {
     for (let j = i + 1; j < names.length; j++) {
-      if (contents[names[i]] === contents[names[j]]) {
+      if (samples[names[i]] === samples[names[j]]) {
         throw new Error(`产物 base-${names[i]} 与 base-${names[j]} 完全相同！`)
       }
     }
   }
 
-  // 打印 token → 声明文本 对照表（每个 token 展示第一处替换结果）
-  console.log("\n┌─ token 对照表 ─────────────────────────────┐")
-  const allTokens = Array.from(
-    new Set(Object.values(report).flatMap((r) => r.tokens))
-  )
-  for (const token of allTokens) {
-    console.log(`│ ${token}`)
-    for (const name of Object.keys(report)) {
-      const text = report[name].styleMap[token]
-      console.log(`│   [${name}] ${text}`)
-    }
-  }
-  console.log("└──────────────────────────────────────────────┘")
-  console.log("\n✅ 验证通过：3 份产物互不相同，且无残留 cn-* 占位符。")
+  console.log(`\n✅ 构建完成：${totalFiles} 个文件，3 套 style 互不相同，无残留 cn-* 占位符。`)
 }
 
 main().catch((error) => {

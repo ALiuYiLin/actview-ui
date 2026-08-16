@@ -1,32 +1,40 @@
 # actview-ui：shadcn build-registry 最小复刻
 
-在 **一个 button 组件** 上复刻 shadcn/ui 的两段流水线：
+在 **button、separator、button-group 三个组件** 上复刻 shadcn/ui 的两段流水线。
+`button-group` 是"稍微复杂"的组件：跨 item 依赖（separator）、6 个新 token、
+IconPlaceholder 图标占位符 —— 把依赖树解析与图标替换两条机制都跑通。
 
 ## 第一段：base × style → 注册表产物（构建侧）
 
 ```
-base 只写一次骨架（cn-* 语义占位符）
+registry/bases/base/registry.json（item 清单 + registryDependencies）
         │
-        ├─ style-aurora.css ──► styles/base-aurora/ui/button.tsx
-        ├─ style-ember.css  ──► styles/base-ember/ui/button.tsx
-        └─ style-mist.css   ──► styles/base-mist/ui/button.tsx
+        ├─ style-aurora.css ──► styles/base-aurora/{ui/button.tsx, ui/separator.tsx, ui/button-group.tsx}
+        ├─ style-ember.css  ──► styles/base-ember/...
+        └─ style-mist.css   ──► styles/base-mist/...
 ```
 
 ## 第二段：注册表产物 → 用户本地（安装侧）
 
 ```
-user-config.json（aliases 配置） + styles/base-<style>/ui/button.tsx
+user-project/user-config.json（aliases + iconLibrary） + styles/base-<style>/**
         │
-        └─► user-project/components/ui/button.tsx
-            （路径由 aliases.ui 决定，import 按 aliases.utils 重写）
-```
+        └─► user-project/components/ui/{separator.tsx, button-group.tsx}
+            （依赖树解析：separator 先装；import 按 aliases 重写；
+              IconPlaceholder → lucide 图标）
 
 ## 目录结构
 
 ```
+app/(create)/components/
+  icon-placeholder.tsx        # IconPlaceholder 占位组件（用户端被 transform-icons 替换）
 registry/
-  bases/base/ui/button.tsx    # 源头：cva + cn-* 占位符（复刻 shadcn 结构）
-  bases/base/lib/utils.ts     # 最小 cn()
+  bases/base/
+    registry.json             # item 清单：button / separator / button-group（依赖 separator）
+    ui/button.tsx             # 源头：cva + cn-* 占位符（复刻 shadcn 结构）
+    ui/separator.tsx          # 源头：被 button-group 依赖
+    ui/button-group.tsx       # 源头：跨 item 引用 + 6 个新 token + IconPlaceholder
+    lib/utils.ts              # 最小 cn()
   styles/style-aurora.css     # 3 套自定义样式（@apply tailwind 形式，同 shadcn 原版）
   styles/style-ember.css
   styles/style-mist.css
@@ -48,35 +56,38 @@ user-project/                 # 第二段产物（脚本生成）
 
 ## 复刻点对照（对应真实 shadcn 代码）
 
-### 第一段 scripts/build.mjs
+### 第一段 scripts/build.mjs（registry 驱动）
 
 | 本仓库 | shadcn/ui 原版 | 差异 |
 |---|---|---|
+| `registry/bases/base/registry.json` | `registry/bases/<base>/registry.ts`（item 清单） | JSON 代替 TS |
 | `createStyleMap(css)` | `packages/shadcn/src/styles/create-style-map.ts`（postcss 提取 `@apply` 值） | 正则提取 `.cn-*` 规则块内 `@apply` 的值（同 `extractTailwindClasses` 语义） |
 | `transformStyleMap(source, map)` | `packages/shadcn/src/styles/transform-style-map.ts`（ts-morph AST 遍历 cva） | 正则贪婪匹配替换字符串中的 `cn-*` token |
-| `rewriteRegistryImports(source)` | `apps/v4/scripts/build-registry.mts` 的 `copyUIToStyles` | `@/registry/bases/base/` → `@/` |
+| `rewriteRegistryImports(source)` | `apps/v4/scripts/build-registry.mts` 的 `copyUIToStyles` | `@/registry/bases/base/ui/` → `@/styles/base-<style>/ui/`、`lib/utils` → `@/lib/utils` |
 
 ### 第二段 scripts/install.mjs
 
 | 本仓库 | shadcn/ui 原版 |
 |---|---|
+| `resolveRegistryTree()` | `packages/shadcn/src/registry/resolver.ts`（BFS registryDependencies，visited 去重，依赖在前） |
 | `getUserConfig()` | `packages/shadcn/src/utils/get-config.ts`（读 components.json） |
 | `resolveFilePath()` | `packages/shadcn/src/utils/updaters/update-files.ts`（type → 目标目录，path 公共段截取文件名） |
 | `transformImports()` | `packages/shadcn/src/utils/transformers/transform-import.ts`（`@/registry/...` → 用户 aliases） |
+| `transformIcons()` | `packages/shadcn/src/utils/transformers/transform-icons.ts`（IconPlaceholder → 图标库组件 + import 注入） |
 | 内容相同则 skip | `update-files.ts` 的 `isContentSame` 逻辑 |
 
 ## 运行
 
 ```bash
-npm install                      # 安装 react / cva / typescript（tsc 验证用）
+npm install                      # 安装 react / cva / lucide-react / typescript（tsc 验证用）
 
-# 第一段：生成 3 套 styles/base-<style>/ui/button.tsx
+# 第一段：生成 3 套 styles/base-<style>/**（9 个文件）
 node scripts/build.mjs
 
-# 第二段：模拟用户 add 组件
-node scripts/install.mjs --style base-aurora      # action: create
-node scripts/install.mjs --style base-aurora      # action: skip（内容相同）
-node scripts/install.mjs --style base-ember       # action: overwrite
+# 第二段：模拟用户 add 组件（依赖树解析 + import 重写 + 图标替换）
+node scripts/install.mjs --item button-group --style base-aurora   # 装 separator + button-group
+node scripts/install.mjs --item button-group --style base-ember    # 同一套路径 → overwrite
+node scripts/install.mjs --item button --style base-mist           # 单组件无依赖
 
 # 全量类型检查（所有 tsx 零报错）
 npx tsc --noEmit
