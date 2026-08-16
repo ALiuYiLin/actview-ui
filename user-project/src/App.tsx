@@ -4,6 +4,7 @@
 // - @/components/** 是 CLI 落盘组件（当前 components.json style）
 // - actview 特色：ref 响应式计数器（createApp + 函数组件 + 原生事件）
 import { ref } from "actview"
+import { Download, Plus, Trash2 } from "@actview/lucide"
 
 import { Button as AuroraButton } from "@/styles/base-aurora/ui/button"
 import {
@@ -54,6 +55,20 @@ function AuroraSection() {
         <AuroraButton size="lg">Large</AuroraButton>
       </div>
       <div class="mt-4 flex flex-wrap items-center gap-2">
+        <AuroraButton size="icon">
+          <Plus />
+        </AuroraButton>
+        <AuroraButton size="icon" variant="outline">
+          <Trash2 />
+        </AuroraButton>
+        <AuroraButton>
+          <Plus /> 新建项目
+        </AuroraButton>
+        <AuroraButton variant="outline">
+          <Download /> 下载
+        </AuroraButton>
+      </div>
+      <div class="mt-4 flex flex-wrap items-center gap-2">
         <AuroraGroup>
           <AuroraButton>编辑</AuroraButton>
           <AuroraButton variant="outline">复制</AuroraButton>
@@ -86,6 +101,20 @@ function EmberSection() {
         <EmberButton size="lg">Large</EmberButton>
       </div>
       <div class="mt-4 flex flex-wrap items-center gap-2">
+        <EmberButton size="icon">
+          <Plus />
+        </EmberButton>
+        <EmberButton size="icon" variant="outline">
+          <Trash2 />
+        </EmberButton>
+        <EmberButton>
+          <Plus /> 新建项目
+        </EmberButton>
+        <EmberButton variant="outline">
+          <Download /> 下载
+        </EmberButton>
+      </div>
+      <div class="mt-4 flex flex-wrap items-center gap-2">
         <EmberGroup>
           <EmberButton>编辑</EmberButton>
           <EmberButton variant="outline">复制</EmberButton>
@@ -116,6 +145,20 @@ function MistSection() {
         <MistButton size="sm">Small</MistButton>
         <MistButton size="default">Default</MistButton>
         <MistButton size="lg">Large</MistButton>
+      </div>
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+        <MistButton size="icon">
+          <Plus />
+        </MistButton>
+        <MistButton size="icon" variant="outline">
+          <Trash2 />
+        </MistButton>
+        <MistButton>
+          <Plus /> 新建项目
+        </MistButton>
+        <MistButton variant="outline">
+          <Download /> 下载
+        </MistButton>
       </div>
       <div class="mt-4 flex flex-wrap items-center gap-2">
         <MistGroup>
