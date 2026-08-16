@@ -1,11 +1,11 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "base-aurora",
+  "style": "base-mist",
   "tsx": true,
   "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",
-    "utils": "@/utilities/cn",
+    "utils": "@/lib/utils",
     "ui": "@/components/ui",
     "lib": "@/lib",
     "hooks": "@/hooks"

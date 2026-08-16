@@ -14,10 +14,10 @@ registry/bases/base/registry.json（item 清单 + registryDependencies）
         └─ style-mist.css   ──► styles/base-mist/...
 ```
 
-## 第二段：注册表产物 → 用户本地（安装侧）
+## 第二段：注册表产物 → 用户本地（安装侧，CLI）
 
 ```
-user-project/user-config.json（aliases + iconLibrary） + styles/base-<style>/**
+actview-ui init（components.json + utils） + styles/base-<style>/**
         │
         └─► user-project/components/ui/{separator.tsx, button-group.tsx}
             （依赖树解析：separator 先装；import 按 aliases 重写；
@@ -28,6 +28,15 @@ user-project/user-config.json（aliases + iconLibrary） + styles/base-<style>/*
 ```
 app/(create)/components/
   icon-placeholder.tsx        # IconPlaceholder 占位组件（用户端被 transform-icons 替换）
+bin/
+  actview-ui.js                  # CLI 可执行入口（package.json bin: actview-ui）
+src/
+  cli.js                      # 参数解析 + 子命令分发（init / add / help）
+  commands/init.js            # actview-ui init：写 components.json + 安装 utils
+  commands/add.js             # actview-ui add：依赖树 + import 重写 + 图标替换 + 落盘
+  lib/registry.js             # loadRegistry / resolveRegistryTree（包内资源定位）
+  lib/config.js               # 用户配置读写（components.json 优先，user-config.json 回退）
+  lib/transforms.js           # resolveFilePath / transformImports / transformIcons
 registry/
   bases/base/
     registry.json             # item 清单：button / separator / button-group（依赖 separator）
@@ -39,19 +48,19 @@ registry/
   styles/style-ember.css
   styles/style-mist.css
 scripts/
-  build.mjs                   # 第一段：base + style → styles/<style>/ui/button.tsx
-  install.mjs                 # 第二段：styles 产物 → 用户本地项目
-package.json                  # react / class-variance-authority / typescript
+  build.mjs                   # 第一段：base + style → styles/<style>/**
+  install.mjs                 # 第二段旧演示入口的薄包装（转发到 CLI add）
+package.json                  # react / cva / lucide-react / typescript + bin: actview-ui
 tsconfig.json                 # paths: "@/*" → ["./*", "./user-project/*"]
 lib/utils.ts                  # styles 产物 import "@/lib/utils" 的解析目标
 styles/                       # 第一段产物
-  base-aurora/ui/button.tsx
-  base-ember/ui/button.tsx
-  base-mist/ui/button.tsx
-user-project/                 # 第二段产物（脚本生成）
-  user-config.json            # 模拟用户 components.json（utils 故意配成 @/utilities/cn）
-  components/ui/button.tsx
-  utilities/cn.ts             # install.mjs 模拟 init 安装的 utils
+  base-aurora/{ui/button.tsx, ui/separator.tsx, ui/button-group.tsx}
+  base-ember/...
+  base-mist/...
+user-project/                 # 演示用"用户项目"（由 CLI init + add 生成）
+  components.json             # actview-ui init 生成
+  lib/utils.ts                # actview-ui init 安装的 utils
+  components/ui/*.tsx         # actview-ui add 安装的组件
 ```
 
 ## 复刻点对照（对应真实 shadcn 代码）
@@ -80,22 +89,28 @@ user-project/                 # 第二段产物（脚本生成）
 
 ```bash
 npm install                      # 安装 react / cva / lucide-react / typescript（tsc 验证用）
+npm link                         # （可选）全局注册 actview-ui 命令
 
 # 第一段：生成 3 套 styles/base-<style>/**（9 个文件）
 node scripts/build.mjs
 
-# 第二段：模拟用户 add 组件（依赖树解析 + import 重写 + 图标替换）
-node scripts/install.mjs --item button-group --style base-aurora   # 装 separator + button-group
-node scripts/install.mjs --item button-group --style base-ember    # 同一套路径 → overwrite
-node scripts/install.mjs --item button --style base-mist           # 单组件无依赖
+# 第二段：CLI（推荐）
+cd user-project
+actview-ui init --style base-mist                # 写 components.json + 安装 utils
+actview-ui add button-group                      # 依赖树解析 + import 重写 + 图标替换
+actview-ui add button separator                  # 一次安装多个组件
+actview-ui add button-group                      # 内容相同 → 全部 skip
+
+# 第二段：旧演示脚本（薄包装，等价 actview-ui add）
+node scripts/install.mjs --item button-group --style base-aurora
 
 # 全量类型检查（所有 tsx 零报错）
 npx tsc --noEmit
 ```
 
-install.mjs 还会把 base 的最小 `cn` 落到用户项目的 `aliases.utils` 路径
-（`user-project/utilities/cn.ts`），模拟 shadcn init 安装 utils 的行为，
-保证 `import { cn } from "@/utilities/cn"` 有真实的解析目标。
+CLI 与真实 shadcn 的对应：
+- `actview-ui init` ← `shadcn init`（写 components.json + 安装 utils）
+- `actview-ui add <component>` ← `shadcn add <component>`（依赖树 → transformers → 落盘）
 
 ### 第二段的真实链路还原
 

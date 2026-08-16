@@ -3,9 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "bin": {
+    "actview-ui": "bin/actview-ui.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "registry",
+    "styles"
+  ],
   "scripts": {
     "build": "node scripts/build.mjs",
-    "install:demo": "node scripts/install.mjs --style base-aurora",
+    "install:demo": "node scripts/install.mjs --item button-group --style base-aurora",
+    "cli": "node bin/actview-ui.js",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
