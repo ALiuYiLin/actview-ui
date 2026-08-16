@@ -33,13 +33,17 @@ registry/
 scripts/
   build.mjs                   # 第一段：base + style → styles/<style>/ui/button.tsx
   install.mjs                 # 第二段：styles 产物 → 用户本地项目
-user-config.json              # 模拟用户 components.json（utils 故意配成 @/utilities/cn）
+package.json                  # react / class-variance-authority / typescript
+tsconfig.json                 # paths: "@/*" → ["./*", "./user-project/*"]
+lib/utils.ts                  # styles 产物 import "@/lib/utils" 的解析目标
 styles/                       # 第一段产物
   base-aurora/ui/button.tsx
   base-ember/ui/button.tsx
   base-mist/ui/button.tsx
 user-project/                 # 第二段产物（脚本生成）
+  user-config.json            # 模拟用户 components.json（utils 故意配成 @/utilities/cn）
   components/ui/button.tsx
+  utilities/cn.ts             # install.mjs 模拟 init 安装的 utils
 ```
 
 ## 复刻点对照（对应真实 shadcn 代码）
@@ -64,6 +68,8 @@ user-project/                 # 第二段产物（脚本生成）
 ## 运行
 
 ```bash
+npm install                      # 安装 react / cva / typescript（tsc 验证用）
+
 # 第一段：生成 3 套 styles/base-<style>/ui/button.tsx
 node scripts/build.mjs
 
@@ -71,7 +77,14 @@ node scripts/build.mjs
 node scripts/install.mjs --style base-aurora      # action: create
 node scripts/install.mjs --style base-aurora      # action: skip（内容相同）
 node scripts/install.mjs --style base-ember       # action: overwrite
+
+# 全量类型检查（所有 tsx 零报错）
+npx tsc --noEmit
 ```
+
+install.mjs 还会把 base 的最小 `cn` 落到用户项目的 `aliases.utils` 路径
+（`user-project/utilities/cn.ts`），模拟 shadcn init 安装 utils 的行为，
+保证 `import { cn } from "@/utilities/cn"` 有真实的解析目标。
 
 ### 第二段的真实链路还原
 

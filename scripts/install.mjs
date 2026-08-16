@@ -7,14 +7,14 @@
 //   updateFiles()      ← 同上（写盘 + 内容相同则 skip）
 //
 // 输入：
-//   - user-config.json                    用户 components.json 的 aliases 配置
+//   - user-project/user-config.json       用户 components.json 的 aliases 配置
 //   - styles/base-<style>/ui/button.tsx   上一步 build.mjs 的产物（模拟注册表分发的组件）
 //
 // 输出（模拟组件落到用户本地项目）：
 //   user-project/<aliases.ui>/button.tsx
 //
 // 用法：
-//   node scripts/install.mjs --style base-aurora --config user-config.json --project user-project
+//   node scripts/install.mjs --style base-aurora --config user-project/user-config.json --project user-project
 
 import { readFile, writeFile, mkdir, access } from "node:fs/promises"
 import path from "node:path"
@@ -166,7 +166,7 @@ async function fileExists(filePath) {
 async function main() {
   const args = parseArgs(process.argv)
   const style = args.style ?? "base-aurora"
-  const configFile = args.config ?? "user-config.json"
+  const configFile = args.config ?? "user-project/user-config.json"
   const projectDir = args.project ?? "user-project"
 
   const config = await getUserConfig(configFile)
@@ -209,6 +209,24 @@ async function main() {
     await writeFile(filePath, transformed, "utf8")
   }
 
+  // 模拟 shadcn init 已为用户安装 utils（registry:lib 的 utils item）：
+  // 把 base 的最小 cn 落到用户项目 aliases.utils 路径，
+  // 让组件里的 "@/utilities/cn" 有真实的解析目标。
+  const utilsSource = await readFile(
+    path.join(ROOT, "registry", "bases", "base", "lib", "utils.ts"),
+    "utf8"
+  )
+  const utilsTarget = `${aliasToLocalDir(config.aliases.utils, projectRoot)}.ts`
+  let utilsAction = "create"
+  if (await fileExists(utilsTarget)) {
+    const existing = await readFile(utilsTarget, "utf8")
+    utilsAction = existing === utilsSource ? "skip" : "overwrite"
+  }
+  if (utilsAction !== "skip") {
+    await mkdir(path.dirname(utilsTarget), { recursive: true })
+    await writeFile(utilsTarget, utilsSource, "utf8")
+  }
+
   // ── 安装报告 ────────────────────────────────────────────────────────────
   console.log("┌─ 注册表 → 用户本地 安装报告 ────────────────────┐")
   console.log(`│ style : ${style}`)
@@ -216,6 +234,7 @@ async function main() {
   console.log(`│ type  : ${registryFile.type}  →  目标目录 aliases.ui = "${targetAlias}"`)
   console.log(`│ 落盘  : ${path.relative(ROOT, filePath).split(path.sep).join("/")}`)
   console.log(`│ action: ${action}`)
+  console.log(`│ utils : ${path.relative(ROOT, utilsTarget).split(path.sep).join("/")}  [${utilsAction}]（模拟 init 安装）`)
   console.log("│ import 重写:")
   for (const { from, to } of rewrites) {
     console.log(`│   "${from}" → "${to}"`)

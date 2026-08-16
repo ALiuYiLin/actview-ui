@@ -3,6 +3,7 @@
 // 由构建脚本按 style 定义替换成具体内容。
 //
 // 注意：本文件不需要真正运行，重点是结构复刻。
+import type { ButtonHTMLAttributes } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/registry/bases/base/lib/utils"
@@ -38,7 +39,7 @@ function Button({
   variant = "default",
   size = "default",
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> &
+}: ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof buttonVariants>) {
   return (
     <button
