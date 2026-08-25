@@ -1,13 +1,12 @@
 // 复刻 shadcn/ui registry/bases/base/ui/button.tsx（源 commit a85299a）的结构，
 // 框架层 actview：
-//   - 原语层 @actview/base-ui/button（复刻 Base UI DOM 契约：type=button/
-//     tabindex=0/disabled/data-disabled）
+//   - 原语层 @base-ui/actview/button（Base UI → actview 完整移植库，本地链接
+//     E:\code3\base-ui\packages\actview）
 //   - 规范写法：函数组件 + useProps（.value 惰性取值，class/className 双写，
 //     解构后不进 rest 透传避免 DOM 覆盖）
-import { Button as ButtonPrimitive } from "@actview/base-ui/button"
+import { Button as ButtonPrimitive } from "@base-ui/actview/button"
 import { computed, useProps } from "@actview/core"
 import { cva, type VariantProps } from "class-variance-authority"
-import type { ButtonHTMLAttributes } from "@actview/jsx"
 
 import { cn } from "@/registry/bases/base/lib/utils"
 
@@ -41,15 +40,7 @@ const buttonVariants = cva(
   }
 )
 
-function Button(
-  props: ButtonHTMLAttributes &
-    VariantProps<typeof buttonVariants> & {
-      disabled?: boolean
-      focusableWhenDisabled?: boolean
-      nativeButton?: boolean
-      render?: any
-    }
-) {
+function Button(props: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
   const {
     variant,
     size,

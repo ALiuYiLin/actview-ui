@@ -10,16 +10,13 @@ minimumReleaseAgeExclude:
   - "@actview/plugin-vite"
   - "@actview/plugin-babel"
 
-# 本仓库内部 workspace 包（@actview/base-ui：无头原语层，见 docs/MIGRATION.md）
+# actview 生态全部本地链接源码仓库（packages/base-ui 已删除）：
+#   - actview / @actview/core / @actview/jsx / @actview/plugin-vite / @actview/testing
+#     → E:\code3\actview（源码，与 @base-ui/actview 内部依赖同一实例，避免双运行时）
+#   - @base-ui/actview（完整 Base UI → actview 移植库）→ E:\code3\base-ui\packages\actview
+# 详见 docs/MIGRATION.md §0
 packages:
   - "packages/*"
-
-# 强制单一 @actview/core 实例：actview@1.0.29 内部依赖 ^1.0.32 会解析到
-# 旧版本，与组件 useProps 依赖的顶层版本形成两套响应式系统（pnpm 严格
-# 布局下不互通，children 更新失效）。统一到 1.0.36（含 SVG set property
-# 修复 + useProps）。
-overrides:
-  "@actview/core": "1.0.36"
 
 allowBuilds:
   esbuild: true
