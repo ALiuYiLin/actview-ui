@@ -1,12 +1,21 @@
 // 主题切换器（纯 DOM 实现，fixed 右下角面板）：
-//   - 视觉风格：aurora / ember / mist（body.style-<name> 作用域样式）
+//   - 视觉风格：8 套官方样式（v4 registry/styles，body.style-<name> 作用域）
 //   - 色板：emerald / red / violet（buildThemeCssText 注入 --color-* 变量）
 //   - 明暗：html.dark（默认主题的暗色支持）
 //   - localStorage 持久化
 import { buildThemeCssText } from "@/registry/bases/base/lib/theme"
 import themes from "@/styles/semantic/themes.json"
 
-export const STYLE_NAMES = ["aurora", "ember", "mist"] as const
+export const STYLE_NAMES = [
+  "luma",
+  "lyra",
+  "maia",
+  "mira",
+  "nova",
+  "rhea",
+  "sera",
+  "vega",
+] as const
 export type StyleName = (typeof STYLE_NAMES)[number]
 
 const PALETTES = [
@@ -25,13 +34,13 @@ interface Prefs {
 const STORAGE_KEY = "actview-ui-theme-prefs"
 
 function loadPrefs(): Prefs {
-  const fallback: Prefs = { style: "aurora", palette: "emerald", dark: false }
+  const fallback: Prefs = { style: "luma", palette: "emerald", dark: false }
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
       return {
-        style: STYLE_NAMES.includes(parsed.style) ? parsed.style : "aurora",
+        style: STYLE_NAMES.includes(parsed.style) ? parsed.style : "luma",
         palette: PALETTES.some((p) => p.name === parsed.palette)
           ? parsed.palette
           : "emerald",

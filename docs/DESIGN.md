@@ -30,9 +30,9 @@ transform-icons 图标替换两条机制都跑通。
 ```
 registry/bases/base/registry.json（item 清单 + registryDependencies + 框架依赖）
         │
-        ├─ style-aurora.css ──► styles/base-aurora/...   ← 路径①：cn-* 展开写死
-        ├─ style-ember.css  ──► styles/base-ember/...       （CLI add 分发）
-        ├─ style-mist.css   ──► styles/base-mist/...
+        ├─ style-luma.css ──► styles/base-luma/...   ← 路径①：cn-* 展开写死
+        ├─ style-sera.css  ──► styles/base-sera/...       （CLI add 分发）
+        ├─ style-nova.css   ──► styles/base-nova/...
         │
         └────────────────────► styles/semantic/...       ← 路径②：cn-* 保留
                                 （ui/*.tsx + styles.css）  （运行时自由切换）
@@ -47,14 +47,14 @@ registry/bases/base/registry.json（item 清单 + registryDependencies + 框架�
 | ③ 主题变量（themes.json） | ①②的 className 引用 `var(--color-*)`/`var(--radius)` | 运行时注入 `:root`/`.dark`/`body.radius-*` | ✅ 色板/明暗/圆角自由切换 |
 
 路径②复刻 shadcn 文档站/create 页机制：style css 以 `.style-<name>` 作用域
-嵌套包装，组件保留 `cn-*`，切换 = `<body class="style-aurora">` 换 class，
+嵌套包装，组件保留 `cn-*`，切换 = `<body class="style-luma">` 换 class，
 组件树零重挂载。CLI 语义模式还会把 icon-placeholder 组件随依赖落盘
 （不跑 transform-icons）。
 
 路径③复刻 shadcn cssVars 机制，四维正交切换：
 
 ```
-<body class="style-aurora dark radius-full">   ← style（形态）× theme（明暗）× radius（圆角）
+<body class="style-luma dark radius-full">   ← style（形态）× theme（明暗）× radius（圆角）
 applyTheme(themes, { color: "red" })           ← 色板（运行时注入变量值）
 ```
 
@@ -98,9 +98,9 @@ registry/
     components/icon-placeholder.tsx  # 图标占位组件（transform-icons 替换目标）
     lib/utils.ts              # cn = twMerge
     lib/theme.ts              # buildThemeCssText/applyTheme 运行时主题注入
-  styles/style-aurora.css     # 3 套作用域样式（.style-<name> 嵌套 + @apply + CSS 变量）
-  styles/style-ember.css
-  styles/style-mist.css
+  styles/style-luma.css     # 8 套作用域样式（.style-<name> 嵌套 + @apply + CSS 变量）
+  styles/style-sera.css
+  styles/style-nova.css
 scripts/
   build.mjs                   # 第一段入口：base + style → styles/**（两套产物）
   lib/build-registry.mjs      # 构建核心（可 import，供测试复用）
@@ -110,9 +110,9 @@ tsconfig.json                 # paths: "@/*" → "./*"；jsxImportSource: "@actv
 vitest.config.ts              # actviewPlugin() + happy-dom（组件测试）
 lib/utils.ts                  # styles 产物 import "@/lib/utils" 的解析目标
 styles/                       # 构建产物（gitignore，pnpm build 生成）
-  base-aurora/{ui/button.tsx, ui/separator.tsx, ui/button-group.tsx, components/icon-placeholder.tsx}
-  base-ember/...
-  base-mist/...
+  base-luma/{ui/button.tsx, ui/separator.tsx, ui/button-group.tsx, components/icon-placeholder.tsx}
+  base-sera/...
+  base-nova/...
   semantic/{ui/*.tsx, components/icon-placeholder.tsx, styles.css, themes.json, theme.ts}
 test/                         # 三层测试（见下）
 ```
@@ -186,8 +186,8 @@ pnpm run test:watch      # watch 模式
 再走 `transformImports` —— 与真实 CLI 行为一致：
 
 ```
-"@/registry/base-aurora/lib/utils"  ──aliases.utils──►  "@/lib/utils"
-"registry/base-aurora/ui/button.tsx" ──type+aliases.ui─►  <用户项目>/components/ui/button.tsx
+"@/registry/base-luma/lib/utils"  ──aliases.utils──►  "@/lib/utils"
+"registry/base-luma/ui/button.tsx" ──type+aliases.ui─►  <用户项目>/components/ui/button.tsx
 ```
 
 ## 验证目标

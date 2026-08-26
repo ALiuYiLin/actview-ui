@@ -161,7 +161,7 @@ describe("路径②：语义类自由切换", () => {
 
     // 三套作用域规则都存在，@apply 已展开为标准 CSS 声明
     // （v4 输出保留嵌套形式：.style-<name> { .cn-button { ... } }）
-    for (const name of ["aurora", "ember", "mist"]) {
+    for (const name of ["luma", "sera", "nova"]) {
       expect(output).toContain(`.style-${name}`)
     }
     expect(output).toContain(".cn-button")
@@ -177,9 +177,9 @@ describe("路径②：语义类自由切换", () => {
   it("组件保留 cn-* 语义类，body class 切换 computed 样式实时生效", async () => {
     // 手写等价作用域规则（happy-dom 不支持 var()，用字面值）
     injectCss(`
-      .style-aurora .cn-button { border-radius: 10px; display: inline-flex; }
-      .style-ember .cn-button { border-radius: 1px; }
-      .style-mist .cn-button { border-radius: 999px; }
+      .style-luma .cn-button { border-radius: 10px; display: inline-flex; }
+      .style-sera .cn-button { border-radius: 1px; }
+      .style-nova .cn-button { border-radius: 999px; }
     `)
 
     function App() {
@@ -192,29 +192,29 @@ describe("路径②：语义类自由切换", () => {
     expect(btn.className).toContain("cn-button")
     expect(btn.className).toContain("cn-button-variant-default")
 
-    document.body.classList.add("style-aurora")
-    const aurora = getComputedStyle(btn)
-    expect(aurora.borderRadius).toBe("10px")
-    expect(aurora.display).toBe("inline-flex")
+    document.body.classList.add("style-luma")
+    const luma = getComputedStyle(btn)
+    expect(luma.borderRadius).toBe("10px")
+    expect(luma.display).toBe("inline-flex")
 
     // 切换验证：happy-dom 的 getComputedStyle 对 class 变化存在缓存 bug，
     // 改用"作用域选择器命中"验证规则切换（命中是样式应用的前提，
     // 真实浏览器的最终渲染此前已由 puppeteer 端到端验证）
-    document.body.classList.remove("style-aurora")
-    document.body.classList.add("style-ember")
-    expect(document.querySelectorAll(".style-ember .cn-button")).toHaveLength(1)
-    expect(document.querySelectorAll(".style-aurora .cn-button")).toHaveLength(0)
+    document.body.classList.remove("style-luma")
+    document.body.classList.add("style-sera")
+    expect(document.querySelectorAll(".style-sera .cn-button")).toHaveLength(1)
+    expect(document.querySelectorAll(".style-luma .cn-button")).toHaveLength(0)
 
-    document.body.classList.remove("style-ember")
-    document.body.classList.add("style-mist")
-    expect(document.querySelectorAll(".style-mist .cn-button")).toHaveLength(1)
-    expect(document.querySelectorAll(".style-ember .cn-button")).toHaveLength(0)
+    document.body.classList.remove("style-sera")
+    document.body.classList.add("style-nova")
+    expect(document.querySelectorAll(".style-nova .cn-button")).toHaveLength(1)
+    expect(document.querySelectorAll(".style-sera .cn-button")).toHaveLength(0)
 
     // 未挂 class：三套作用域规则均不命中（隔离）
-    document.body.classList.remove("style-mist")
+    document.body.classList.remove("style-nova")
     expect(
       document.querySelectorAll(
-        ".style-aurora .cn-button, .style-ember .cn-button, .style-mist .cn-button"
+        ".style-luma .cn-button, .style-sera .cn-button, .style-nova .cn-button"
       )
     ).toHaveLength(0)
   })

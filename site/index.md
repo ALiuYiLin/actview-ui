@@ -19,7 +19,7 @@ features:
   - title: 与 React 参考字节一致
     details: golden 对比测试（DOM 归一化后逐字节比对）覆盖 L0a 22 用例 + L1 11 用例，全部通过
   - title: registry + CLI
-    details: 组件通过 actview-ui CLI 落到用户项目，样式可自由切换（aurora / emerald / mist…）
+    details: 组件通过 actview-ui CLI 落到用户项目，8 套官方样式（luma/lyra/maia/mira/nova/rhea/sera/vega）自由切换
   - title: 文档由 ActPress 驱动
     details: 本站由 @actview/press（vitepress 的 ActView 移植版）构建 —— 文档框架本身也是 ActView
 ---

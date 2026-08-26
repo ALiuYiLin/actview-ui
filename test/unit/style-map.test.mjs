@@ -56,10 +56,10 @@ describe("rewriteRegistryImports", () => {
       'from "@/registry/bases/base/lib/utils"',
       'from "@/app/(create)/components/icon-placeholder"',
     ].join("\n")
-    const out = rewriteRegistryImports(source, "base-aurora")
-    expect(out).toContain("@/styles/base-aurora/ui/separator")
+    const out = rewriteRegistryImports(source, "base-luma")
+    expect(out).toContain("@/styles/base-luma/ui/separator")
     expect(out).toContain("@/lib/utils")
-    expect(out).toContain("@/styles/base-aurora/components/icon-placeholder")
+    expect(out).toContain("@/styles/base-luma/components/icon-placeholder")
   })
 })
 

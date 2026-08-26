@@ -18,11 +18,11 @@ afterEach(async () => {
 
 describe("CLI init", () => {
   it("写 components.json + utils + 主题文件（themes.json/theme.ts）", async () => {
-    await runInitCommand({ cwd: dir, style: "base-ember" })
+    await runInitCommand({ cwd: dir, style: "base-sera" })
     const cfg = JSON.parse(
       await readFile(path.join(dir, "components.json"), "utf8")
     )
-    expect(cfg.style).toBe("base-ember")
+    expect(cfg.style).toBe("base-sera")
     expect(cfg.iconLibrary).toBe("lucide")
     // 主题参数（路径③）写入配置
     expect(cfg.baseColor).toBe("emerald")
@@ -41,7 +41,7 @@ describe("CLI init", () => {
 
   it("目标目录不存在时自动创建", async () => {
     const nested = path.join(dir, "deep", "nested")
-    await runInitCommand({ cwd: nested, style: "base-mist" })
+    await runInitCommand({ cwd: nested, style: "base-nova" })
     await access(path.join(nested, "components.json"))
     await access(path.join(nested, "lib", "utils.ts"))
   })
@@ -74,7 +74,7 @@ describe("CLI add", () => {
   })
 
   it("add --semantic：cn-* 保留 + 作用域样式表落盘", async () => {
-    await runInitCommand({ cwd: dir, style: "base-aurora" })
+    await runInitCommand({ cwd: dir, style: "base-luma" })
     await runAddCommand({ cwd: dir, items: ["button"], semantic: true })
 
     const btn = await readFile(
@@ -91,8 +91,8 @@ describe("CLI add", () => {
       path.join(dir, "styles", "actview-ui.css"),
       "utf8"
     )
-    expect(css).toContain(".style-aurora")
-    expect(css).toContain(".style-ember")
-    expect(css).toContain(".style-mist")
+    expect(css).toContain(".style-luma")
+    expect(css).toContain(".style-sera")
+    expect(css).toContain(".style-nova")
   })
 })

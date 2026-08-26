@@ -41,7 +41,7 @@ export async function runAddCommand(args) {
   const semantic = !!args.semantic
 
   const { config } = await loadUserConfig(cwd)
-  const style = args.style ?? config.style ?? "base-aurora"
+  const style = args.style ?? config.style ?? "base-luma"
   const registry = await loadRegistry()
 
   // 已安装依赖检测（复刻 update-dependencies 的"检查"部分，只提示不安装）
@@ -171,7 +171,7 @@ export async function runAddCommand(args) {
     console.log(
       `│ 样式表: styles/actview-ui.css  [${(await fileExists(cssTarget)) ? "已写入" : "写入失败"}]`
     )
-    console.log(`│ 用法  : <body class="style-aurora"> ↔ style-ember / style-mist 自由切换`)
+    console.log(`│ 用法  : <body class="style-luma"> ↔ 其余 7 套（style-lyra/maia/mira/nova/rhea/sera/vega）自由切换`)
   }
 
   // npm 依赖报告（聚合全部 item 的 dependencies，去重）

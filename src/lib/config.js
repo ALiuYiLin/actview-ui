@@ -9,7 +9,7 @@ export const CONFIG_FILES = ["components.json", "user-config.json"]
 
 export const DEFAULT_CONFIG = {
   $schema: "https://ui.shadcn.com/schema.json",
-  style: "base-aurora",
+  style: "base-luma",
   tsx: true,
   iconLibrary: "lucide",
   // 主题（路径③）：色板 / 明暗 / 圆角 —— 运行时自由切换

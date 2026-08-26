@@ -5,9 +5,14 @@
    - 站点自身布局 + 主题切换面板样式 */
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "../../registry/styles/style-aurora.css";
-@import "../../registry/styles/style-ember.css";
-@import "../../registry/styles/style-mist.css";
+@import "../../registry/styles/style-luma.css";
+@import "../../registry/styles/style-lyra.css";
+@import "../../registry/styles/style-maia.css";
+@import "../../registry/styles/style-mira.css";
+@import "../../registry/styles/style-nova.css";
+@import "../../registry/styles/style-rhea.css";
+@import "../../registry/styles/style-sera.css";
+@import "../../registry/styles/style-vega.css";
 
 /* emerald 色板默认值（构建期解析 bg-input 等 @apply；运行时覆盖为注入值）。
    themes.json 只含 11 个核心色；input/card/popover/accent 等衍生色取同系值 */

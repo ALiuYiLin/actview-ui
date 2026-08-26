@@ -58,7 +58,7 @@
 ### 2.2 目标（actview-ui）现有能力
 
 - `registry/bases/base/`：registry.json（items + `semanticDependencies` 扩展）、ui/（button/separator/button-group）、components/icon-placeholder、lib/（utils/theme）、themes.json
-- `registry/styles/style-{aurora,ember,mist}.css`：3 套，`.style-<name>` 作用域壳 + `.cn-*` token
+- `registry/styles/style-{luma,lyra,maia,mira,nova,rhea,sera,vega}.css`：8 套（v4 官方样式直接适配），`.style-<name>` 作用域壳 + `.cn-*` token
 - 构建：`scripts/lib/build-registry.mjs`（createStyleMap / transformStyleMap / verifyTokens / buildRegistry / buildSemanticRegistry）
 - CLI：`src/cli.js` init/add（`--semantic`），transforms（transformImports / transformIcons / transformSemanticImports / restoreRegistryImports）
 - 测试：vitest + happy-dom + `@actview/testing`，49 用例全绿
@@ -68,7 +68,7 @@
 
 1. **原语层**：26+ 个 Base UI 交互原语在 actview 生态不存在 → 本仓库建 `@actview/base-ui` workspace 包（`packages/base-ui`）。
 2. **组件资产**：目标只有 3 个 ui 组件 → 迁移 60 个（chart 跳过）+ lib/hooks。
-3. **样式 token**：目标 3 套 style css 只有少量 token → 全量同步源的 `.cn-*` token 集。
+3. **样式 token**：目标 8 套 style css 只有少量 token → 全量同步源的 `.cn-*` token 集。
 
 ---
 
@@ -159,7 +159,7 @@ DOM 结构保持一致是本迁移的硬约束，逐组件锁定以下细节：
 ### 3.8 样式一致性（token 同步）
 
 - `.cn-*` token 是框架无关的纯 CSS（`@apply` 在 tailwind v4 两栈等价编译），**token body 以源为准全量搬运**。
-- 策略：以源 `style-luma.css`（8 套之一）为 canonical token 源，用脚本提取全部 `.cn-*` 块，写入目标 3 套 `style-*.css` 的 `.style-<name>` 作用域内（3 套共用同一 token body，只保留各自 `.style-<name>` 壳与 `--radius` 默认值；颜色/圆角差异继续走 cssVars 主题层）。
+- 策略：以源 `style-luma.css`（8 套之一）为 canonical token 源，用脚本提取全部 `.cn-*` 块，写入目标 8 套 `style-*.css` 的 `.style-<name>` 作用域内（8 套共用同一 token body，只保留各自 `.style-<name>` 壳与 `--radius` 默认值；颜色/圆角差异继续走 cssVars 主题层）。
 - 校验：扩充现有 `verifyTokens` —— 组件 class 字符串里出现的每个 `.cn-*` 前缀必须在 styles css 中有定义，双向（styles 里有定义但无组件使用则告警）。
 - 主题变量名对齐：源的 `--color-*` v4 变量集与目标 themes.json/theme.ts 的变量集做一次全量核对（源变量 ⊇ 目标变量；缺失的补进 themes.json）。
 - 源 BASE_STYLE 的 `@import "tw-animate-css"` / `"shadcn/tailwind.css"`：目标等价物已在现有 styles css 中处理（`@reference "tailwindcss"` + 编译管线），不照搬。
@@ -207,7 +207,7 @@ DOM 结构保持一致是本迁移的硬约束，逐组件锁定以下细节：
    - `className` → `class` 双写；`React.ComponentProps<"x">` → `@actview/jsx` 类型；
    - lucide 名映射表替换。
 5. **registry.json 生成器** `scripts/gen-registry-json.mjs`：解析源各 `_registry.ts` 的 name/files/registryDependencies → 生成目标 registry.json items（dependencies 字段由 import 扫描得出），保留 `semanticDependencies` 扩展。
-6. **token 同步脚本** `scripts/sync-style-tokens.mjs`：源 style css → 目标 3 套 styles css + verifyTokens 双向校验。
+6. **token 同步脚本** `scripts/sync-style-tokens.mjs`：源 style css → 目标 8 套 styles css + verifyTokens 双向校验。
 7. **一致性采集器** `scripts/capture-golden.mjs`：跑 React harness，输出归一化 golden HTML + 截图到 `test/fixtures/golden/`。
 
 ### 5.2 Phase 1：ui 组件（60 个，按依赖分层推进）

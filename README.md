@@ -25,7 +25,7 @@ actview-ui --help
 
 ```bash
 # ① 初始化用户项目：components.json + lib/utils.ts + lib/theme.ts + styles/themes.json
-actview-ui init --cwd my-app --style base-aurora
+actview-ui init --cwd my-app --style base-luma
 
 # ② 安装组件：依赖树解析 + import 重写 + 图标替换 + 落盘
 actview-ui add button-group --cwd my-app
@@ -41,7 +41,7 @@ actview-ui add button-group --cwd my-app --semantic
 | 参数 | 说明 | 默认 |
 |---|---|---|
 | `--cwd <dir>` | 项目目录（不存在则自动创建） | 当前目录 |
-| `--style <style>` | 注册表风格：`base-aurora` / `base-ember` / `base-mist` | `base-aurora` |
+| `--style <style>` | 注册表风格（8 套官方）：`base-luma` / `base-lyra` / `base-maia` / `base-mira` / `base-nova` / `base-rhea` / `base-sera` / `base-vega` | `base-luma` |
 | `--yes` | 已有配置时强制覆盖重写 | 否 |
 
 落盘产物：`components.json`（含 style/baseColor/theme/radius）、`lib/utils.ts`、
@@ -84,7 +84,7 @@ actview-ui add button-group --cwd demo-app --semantic
 
 ```html
 <!-- 换 body class 即切换整套形态，组件树零重挂载 -->
-<body class="style-aurora">   <!-- ↔ style-ember / style-mist -->
+<body class="style-luma">   <!-- ↔ style-lyra / style-maia / style-mira / style-nova / style-rhea / style-sera / style-vega -->
 ```
 
 ### ④ 主题切换（色板 / 明暗 / 圆角）
@@ -98,7 +98,7 @@ applyTheme(themes, { color: "red", theme: "dark", radius: "full" })
 ```
 
 ```html
-<body class="style-mist dark radius-full">
+<body class="style-nova dark radius-full">
   <!-- style=形态 / dark=明暗 / radius-full=圆角覆盖 -->
 </body>
 ```

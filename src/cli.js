@@ -20,7 +20,7 @@ actview-ui ${VERSION} — shadcn build-registry 最小复刻 CLI
 
 init 参数:
   --cwd <dir>        项目目录（默认当前目录）
-  --style <style>    注册表风格：base-aurora / base-ember / base-mist（默认 base-aurora）
+  --style <style>    注册表风格：base-luma / base-lyra / base-maia / base-mira / base-nova / base-rhea / base-sera / base-vega（默认 base-luma）
   --yes              已有配置时强制覆盖重写
 
 add 参数:

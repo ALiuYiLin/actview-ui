@@ -232,7 +232,7 @@ export async function buildRegistry(options = {}) {
 
   if (!silent) {
     console.log(
-      `\n✅ 构建完成：${written.length} 个文件，3 套 style 互不相同（style 层差异），无残留 cn-* 占位符。`
+      `\n✅ 构建完成：${written.length} 个文件，8 套 style（v4 官方：luma/lyra/maia/mira/nova/rhea/sera/vega），无残留 cn-* 占位符。`
     )
   }
 

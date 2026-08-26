@@ -1,15 +1,15 @@
-// L2 组件测试：styles 构建物（base-aurora 的 button）行为断言
+// L2 组件测试：styles 构建物（base-luma 的 button）行为断言
 // 用 @actview/testing（render/fireEvent/waitFor）驱动 actview 组件。
 // 注意：传给 render 的组件必须是"函数声明"形式 —— defineComponentPlugin
 // 只转换声明/赋值形态，内联箭头函数会以裸函数进入运行时（渲染失败）。
 import { describe, it, expect, afterEach } from "vitest"
 import { render, fireEvent, waitFor, cleanup } from "@actview/testing"
 import { reactive } from "actview"
-import { Button } from "@/styles/base-aurora/ui/button"
+import { Button } from "@/styles/base-luma/ui/button"
 
 afterEach(cleanup)
 
-describe("Button（styles/base-aurora/ui/button.tsx 构建物）", () => {
+describe("Button（styles/base-luma/ui/button.tsx 构建物）", () => {
   it("渲染默认 variant/size，cn 合并与 token 展开正确", () => {
     function App() {
       return <Button>Hello</Button>

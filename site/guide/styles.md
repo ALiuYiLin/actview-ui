@@ -17,13 +17,13 @@ import { buildThemeCssText } from "@/registry/bases/base/lib/theme"
 import themes from "@/styles/semantic/themes.json"
 
 const css = buildThemeCssText(themes, {
-  color: "aurora",   // 色板：aurora / emerald / mist …
+  color: "emerald",  // 色板：emerald / red / violet
   theme: "light",    // light | dark
   radius: "default", // 圆角
 })
 ```
 
-组件样式表是**作用域样式**：body 挂 `style-<name>` class 即整套切换视觉（本站挂 `style-aurora`）。
+组件样式表是**作用域样式**：body 挂 `style-<name>` class 即整套切换视觉（本站默认挂 `style-luma`，右下角切换器可换 8 套官方风格：luma / lyra / maia / mira / nova / rhea / sera / vega）。
 
 ## 组件原语
 

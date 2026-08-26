@@ -24,12 +24,12 @@ const config = {
 describe("updateImportAliases", () => {
   it("registry ui → aliases.ui", () => {
     expect(
-      updateImportAliases("@/registry/base-mist/ui/separator", config)
+      updateImportAliases("@/registry/base-nova/ui/separator", config)
     ).toBe("@/components/ui/separator")
   })
 
   it("registry lib/utils → aliases.utils", () => {
-    expect(updateImportAliases("@/registry/base-mist/lib/utils", config)).toBe(
+    expect(updateImportAliases("@/registry/base-nova/lib/utils", config)).toBe(
       "@/lib/utils"
     )
   })
@@ -37,7 +37,7 @@ describe("updateImportAliases", () => {
   it("registry components → aliases.components", () => {
     expect(
       updateImportAliases(
-        "@/registry/base-mist/components/icon-placeholder",
+        "@/registry/base-nova/components/icon-placeholder",
         config
       )
     ).toBe("@/components/icon-placeholder")
@@ -53,13 +53,13 @@ describe("updateImportAliases", () => {
 describe("transformImports", () => {
   it("重写 import 并记录变更", () => {
     const { transformed, rewrites } = transformImports(
-      'import { X } from "@/registry/base-mist/ui/separator"',
+      'import { X } from "@/registry/base-nova/ui/separator"',
       config
     )
     expect(transformed).toContain('from "@/components/ui/separator"')
     expect(rewrites).toEqual([
       {
-        from: "@/registry/base-mist/ui/separator",
+        from: "@/registry/base-nova/ui/separator",
         to: "@/components/ui/separator",
       },
     ])
@@ -69,7 +69,7 @@ describe("transformImports", () => {
 describe("transformIcons", () => {
   it("IconPlaceholder → 图标组件 + import 注入 + 移除占位 import", () => {
     const source = [
-      'import { IconPlaceholder } from "@/registry/base-mist/components/icon-placeholder"',
+      'import { IconPlaceholder } from "@/registry/base-nova/components/icon-placeholder"',
       '<IconPlaceholder lucide="ChevronDown" tabler="IconChevronDown" />',
     ].join("\n")
     const { transformed, icons } = transformIcons(source, {
@@ -99,14 +99,14 @@ describe("transformIcons", () => {
 describe("restoreRegistryImports", () => {
   it("styles 形态 → registry 形态（content 还原）", () => {
     const source = [
-      'from "@/styles/base-aurora/ui/separator"',
-      'from "@/styles/base-aurora/components/icon-placeholder"',
+      'from "@/styles/base-luma/ui/separator"',
+      'from "@/styles/base-luma/components/icon-placeholder"',
       'from "@/lib/utils"',
     ].join("\n")
-    const out = restoreRegistryImports(source, "base-aurora")
-    expect(out).toContain("@/registry/base-aurora/ui/separator")
-    expect(out).toContain("@/registry/base-aurora/components/icon-placeholder")
-    expect(out).toContain("@/registry/base-aurora/lib/utils")
+    const out = restoreRegistryImports(source, "base-luma")
+    expect(out).toContain("@/registry/base-luma/ui/separator")
+    expect(out).toContain("@/registry/base-luma/components/icon-placeholder")
+    expect(out).toContain("@/registry/base-luma/lib/utils")
   })
 })
 
@@ -125,7 +125,7 @@ describe("transformSemanticImports", () => {
 describe("resolveFilePath / resolveNestedFilePath", () => {
   it("registry:ui → aliases.ui 目录，path 中 ui 段截出文件名", () => {
     const { filePath } = resolveFilePath(
-      "registry/base-mist/ui/button.tsx",
+      "registry/base-nova/ui/button.tsx",
       "registry:ui",
       config,
       "C:\\proj"
@@ -135,7 +135,7 @@ describe("resolveFilePath / resolveNestedFilePath", () => {
 
   it("registry:component → aliases.components 目录", () => {
     const { filePath } = resolveFilePath(
-      "registry/base-mist/components/icon-placeholder.tsx",
+      "registry/base-nova/components/icon-placeholder.tsx",
       "registry:component",
       config,
       "C:\\proj"

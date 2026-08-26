@@ -17,7 +17,7 @@ const STYLES_ROOT = path.join(
 )
 
 describe("buildRegistry（路径①：展开产物）", () => {
-  it("产物 = 3 style × registry items、无 cn-* 残留（白名单除外）、展开产物三套一致", async () => {
+  it("产物 = 8 style × registry items、无 cn-* 残留（白名单除外）", async () => {
     const written = await buildRegistry({ silent: true })
     const registry = JSON.parse(
       await readFile(
@@ -33,7 +33,7 @@ describe("buildRegistry（路径①：展开产物）", () => {
         "utf8"
       )
     )
-    expect(written).toHaveLength(registry.items.length * 3)
+    expect(written).toHaveLength(registry.items.length * 8)
 
     for (const file of written) {
       const content = await readFile(path.join(STYLES_ROOT, file), "utf8")
@@ -43,25 +43,18 @@ describe("buildRegistry（路径①：展开产物）", () => {
       expect(residue).toEqual([])
     }
 
-    // token 全量同步后（docs/MIGRATION.md §3.8：3 套 style 共用 luma token 体），
-    // 路径①展开产物三套一致是预期行为——style 差异由 style 层默认变量
-    // （--radius）与 themes.json 主题层承担，不再写进组件类。
-    const aurora = await readFile(
-      path.join(STYLES_ROOT, "base-aurora", "ui", "button.tsx"),
-      "utf8"
-    )
-    const ember = await readFile(
-      path.join(STYLES_ROOT, "base-ember", "ui", "button.tsx"),
-      "utf8"
-    )
-    const mist = await readFile(
-      path.join(STYLES_ROOT, "base-mist", "ui", "button.tsx"),
-      "utf8"
-    )
-    expect(aurora).toBe(ember)
-    expect(ember).toBe(mist)
-
-    // style 层差异真实存在：三套壳的 --radius 默认值互异
+    // 8 套官方风格（v4 registry/styles：luma/lyra/maia/mira/nova/rhea/sera/vega）
+    // 全部生成产物（风格差异由各自 .style-<name> 作用域规则承担）
+    const STYLE_NAMES = [
+      "luma",
+      "lyra",
+      "maia",
+      "mira",
+      "nova",
+      "rhea",
+      "sera",
+      "vega",
+    ]
     const registryStylesRoot = path.join(
       path.dirname(fileURLToPath(import.meta.url)),
       "..",
@@ -69,21 +62,23 @@ describe("buildRegistry（路径①：展开产物）", () => {
       "registry",
       "styles"
     )
-    const readStyle = (name) =>
-      readFile(path.join(registryStylesRoot, `${name}.css`), "utf8")
-    const radiusValues = []
-    for (const name of ["style-aurora", "style-ember", "style-mist"]) {
-      const css = await readStyle(name)
-      const m = css.match(/--radius:\s*([^;]+);/)
-      radiusValues.push(m?.[1])
+    for (const name of STYLE_NAMES) {
+      await expect(
+        readFile(path.join(registryStylesRoot, `style-${name}.css`), "utf8")
+      ).resolves.toContain(`.style-${name}`)
+      // 展开产物：cn-* 占位符已替换为具体类字符串（cn- 残留由上文 verifyTokens 兜底）
+      const expanded = await readFile(
+        path.join(STYLES_ROOT, `base-${name}`, "ui", "button.tsx"),
+        "utf8"
+      )
+      expect(expanded).toContain("inline-flex")
     }
-    expect(new Set(radiusValues).size).toBe(3)
   })
 
   it("产物 import 重写正确（原语库 / lib/utils）", async () => {
     await buildRegistry({ silent: true })
     const btn = await readFile(
-      path.join(STYLES_ROOT, "base-aurora", "ui", "button.tsx"),
+      path.join(STYLES_ROOT, "base-luma", "ui", "button.tsx"),
       "utf8"
     )
     expect(btn).toContain('from "@actview/base-ui"')
@@ -108,12 +103,21 @@ describe("buildSemanticRegistry（路径②：自由切换）", () => {
     expect(btn).toContain('"cn-button-variant-default"')
     expect(btn).toContain("@/lib/utils")
 
-    // 作用域样式表：三套 .style-<name> + .cn-* 规则
+    // 作用域样式表：8 套 .style-<name> + .cn-* 规则
     const css = await readFile(
       path.join(STYLES_ROOT, "semantic", "styles.css"),
       "utf8"
     )
-    for (const name of ["aurora", "ember", "mist"]) {
+    for (const name of [
+      "luma",
+      "lyra",
+      "maia",
+      "mira",
+      "nova",
+      "rhea",
+      "sera",
+      "vega",
+    ]) {
       expect(css).toContain(`.style-${name}`)
     }
     expect(css).toContain(".cn-button")
