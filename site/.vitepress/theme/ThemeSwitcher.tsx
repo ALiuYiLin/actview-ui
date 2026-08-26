@@ -19,8 +19,6 @@ import {
   type ThemePrefsStore,
 } from "./components/useThemePrefs"
 import { OptionGroup } from "./components/OptionGroup"
-import { SegmentedButtons } from "./components/SegmentedButtons"
-import { SwatchRow } from "./components/SwatchRow"
 import { FontSelects } from "./components/FontSelects"
 
 export function ThemeSwitcher() {
@@ -62,62 +60,54 @@ export function ThemeSwitcher() {
         {open.value && (
           <div class="actview-ui-switcher-body">
             {/* 风格（8） */}
-            <OptionGroup label="风格">
-              <SegmentedButtons
-                value={store.prefs.value.style}
-                options={options(STYLE_NAMES)}
-                onChange={(v) => store.setPref("style", v)}
-              />
-            </OptionGroup>
+            <OptionGroup
+              label="风格"
+              value={store.prefs.value.style}
+              options={options(STYLE_NAMES)}
+              onChange={(v) => store.setPref("style", v)}
+            />
 
             {/* 色板（24：中性 7 + 彩色 17） */}
-            <OptionGroup label="色板">
-              <SwatchRow
-                value={store.prefs.value.palette}
-                items={NEUTRAL_PALETTES}
-                onChange={(v) => store.setPref("palette", v)}
-              />
-              <SwatchRow
-                value={store.prefs.value.palette}
-                items={COLOR_PALETTES}
-                onChange={(v) => store.setPref("palette", v)}
-              />
-            </OptionGroup>
+            <OptionGroup
+              label="色板"
+              value={store.prefs.value.palette}
+              items={NEUTRAL_PALETTES}
+              onChange={(v) => store.setPref("palette", v)}
+            />
+            <OptionGroup
+              label=""
+              value={store.prefs.value.palette}
+              items={COLOR_PALETTES}
+              onChange={(v) => store.setPref("palette", v)}
+            />
 
             {/* 基色（7 中性，方形与色板圆点区分） */}
-            <OptionGroup label="基色">
-              <SwatchRow
-                value={store.prefs.value.baseColor}
-                items={BASE_COLOR_ITEMS}
-                onChange={(v) => store.setPref("baseColor", v)}
-                square
-                titlePrefix="基色 "
-              />
-            </OptionGroup>
+            <OptionGroup
+              label="基色"
+              value={store.prefs.value.baseColor}
+              items={BASE_COLOR_ITEMS}
+              onChange={(v) => store.setPref("baseColor", v)}
+              square
+              titlePrefix="基色 "
+            />
 
             {/* 图表色（跟随 + 24） */}
-            <OptionGroup label="图表色">
-              <SegmentedButtons
-                value={store.prefs.value.chartColor}
-                options={[{ value: "follow", label: "跟随" }]}
-                onChange={(v) => store.setPref("chartColor", v)}
-              />
-              <SwatchRow
-                value={store.prefs.value.chartColor}
-                items={ALL_PALETTES}
-                onChange={(v) => store.setPref("chartColor", v)}
-                titlePrefix="图表 "
-              />
-            </OptionGroup>
+            <OptionGroup
+              label="图表色"
+              value={store.prefs.value.chartColor}
+              options={[{ value: "follow", label: "跟随" }]}
+              items={ALL_PALETTES}
+              onChange={(v) => store.setPref("chartColor", v)}
+              titlePrefix="图表 "
+            />
 
             {/* 圆角（5 档） */}
-            <OptionGroup label="圆角">
-              <SegmentedButtons
-                value={store.prefs.value.radius}
-                options={options(RADII)}
-                onChange={(v) => store.setPref("radius", v)}
-              />
-            </OptionGroup>
+            <OptionGroup
+              label="圆角"
+              value={store.prefs.value.radius}
+              options={options(RADII)}
+              onChange={(v) => store.setPref("radius", v)}
+            />
 
             {/* 字体（26）+ 标题字体（受控 select） */}
             <FontSelects
@@ -127,59 +117,53 @@ export function ThemeSwitcher() {
             />
 
             {/* 菜单强调 + 菜单色 */}
-            <OptionGroup label="菜单强调">
-              <SegmentedButtons
-                value={store.prefs.value.menuAccent}
-                options={options(MENU_ACCENTS)}
-                onChange={(v) => store.setPref("menuAccent", v)}
-              />
-            </OptionGroup>
-            <OptionGroup label="菜单色">
-              <SegmentedButtons
-                value={store.prefs.value.menuColor}
-                options={MENU_COLORS.map((n) => ({ value: n, label: n }))}
-                onChange={(v) => store.setPref("menuColor", v)}
-              />
-            </OptionGroup>
+            <OptionGroup
+              label="菜单强调"
+              value={store.prefs.value.menuAccent}
+              options={options(MENU_ACCENTS)}
+              onChange={(v) => store.setPref("menuAccent", v)}
+            />
+            <OptionGroup
+              label="菜单色"
+              value={store.prefs.value.menuColor}
+              options={MENU_COLORS.map((n) => ({ value: n, label: n }))}
+              onChange={(v) => store.setPref("menuColor", v)}
+            />
 
             {/* 指针 / 缩放 / 方向 / 明暗 */}
-            <OptionGroup label="指针">
-              <SegmentedButtons
-                value={store.prefs.value.pointer ? "on" : "off"}
-                options={[
-                  { value: "on", label: "开" },
-                  { value: "off", label: "关" },
-                ]}
-                onChange={(v) => store.setPref("pointer", v === "on")}
-              />
-            </OptionGroup>
-            <OptionGroup label="缩放">
-              <SegmentedButtons
-                value={String(store.prefs.value.size)}
-                options={SIZES.map((s) => ({ value: String(s), label: `${s}%` }))}
-                onChange={(v) => store.setPref("size", Number(v))}
-              />
-            </OptionGroup>
-            <OptionGroup label="方向">
-              <SegmentedButtons
-                value={store.prefs.value.rtl ? "rtl" : "ltr"}
-                options={[
-                  { value: "ltr", label: "LTR" },
-                  { value: "rtl", label: "RTL" },
-                ]}
-                onChange={(v) => store.setPref("rtl", v === "rtl")}
-              />
-            </OptionGroup>
-            <OptionGroup label="模式">
-              <SegmentedButtons
-                value={store.prefs.value.dark ? "dark" : "light"}
-                options={[
-                  { value: "light", label: "☀ 亮色" },
-                  { value: "dark", label: "🌙 暗色" },
-                ]}
-                onChange={(v) => store.setPref("dark", v === "dark")}
-              />
-            </OptionGroup>
+            <OptionGroup
+              label="指针"
+              value={store.prefs.value.pointer ? "on" : "off"}
+              options={[
+                { value: "on", label: "开" },
+                { value: "off", label: "关" },
+              ]}
+              onChange={(v) => store.setPref("pointer", v === "on")}
+            />
+            <OptionGroup
+              label="缩放"
+              value={String(store.prefs.value.size)}
+              options={SIZES.map((s) => ({ value: String(s), label: `${s}%` }))}
+              onChange={(v) => store.setPref("size", Number(v))}
+            />
+            <OptionGroup
+              label="方向"
+              value={store.prefs.value.rtl ? "rtl" : "ltr"}
+              options={[
+                { value: "ltr", label: "LTR" },
+                { value: "rtl", label: "RTL" },
+              ]}
+              onChange={(v) => store.setPref("rtl", v === "rtl")}
+            />
+            <OptionGroup
+              label="模式"
+              value={store.prefs.value.dark ? "dark" : "light"}
+              options={[
+                { value: "light", label: "☀ 亮色" },
+                { value: "dark", label: "🌙 暗色" },
+              ]}
+              onChange={(v) => store.setPref("dark", v === "dark")}
+            />
           </div>
         )}
       </div>
