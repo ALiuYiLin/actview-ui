@@ -22,9 +22,16 @@
       ]
     }
   },
-  // 只覆盖 site 目录（含 .vitepress 下的 ts/tsx 与示例页），
-  // 构建产物目录排除（.vitepress/cache|dist 是 press 生成的临时产物）
-  "include": ["**/*.ts", "**/*.tsx", "env.d.ts"],
+  // 注意：TS include 的 `**` 通配不匹配以 `.` 开头的目录（.vitepress），
+  // 必须显式列出 .vitepress 的 glob，否则 .vitepress/theme|config 等文件
+  // 不在本项目内，IDE 会退回推断项目（无 paths/声明）而误报。
+  "include": [
+    ".vitepress/**/*.ts",
+    ".vitepress/**/*.tsx",
+    "**/*.ts",
+    "**/*.tsx",
+    "env.d.ts"
+  ],
   "exclude": [
     ".vitepress/cache/**",
     ".vitepress/dist/**",

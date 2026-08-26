@@ -18,7 +18,9 @@ export default defineConfig({
         "@": registryRoot,
       },
     },
-    plugins: [tailwindcss()],
+    // vite 双版本并存（press 依赖 vite 7、@tailwindcss/vite 解析到 vite 8），
+    // Plugin 类型不互通，断言为 any[] 绕开（运行期无影响）
+    plugins: [tailwindcss()] as any[],
   },
 
   themeConfig: {

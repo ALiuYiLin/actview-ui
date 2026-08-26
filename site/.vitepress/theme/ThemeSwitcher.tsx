@@ -56,7 +56,8 @@ const ALL_PALETTES = Object.entries(themes.themes).map(([name, palette]) => ({
 const NEUTRAL_NAMES = ["neutral", "stone", "zinc", "mauve", "olive", "mist", "taupe"]
 const NEUTRAL_PALETTES = ALL_PALETTES.filter((p) => NEUTRAL_NAMES.includes(p.name))
 const COLOR_PALETTES = ALL_PALETTES.filter((p) => !NEUTRAL_NAMES.includes(p.name))
-const BASE_COLORS = Object.keys(themes.baseColors)
+// keyof 收窄：themes.baseColors 是字面量对象类型，索引需要 keyof
+const BASE_COLORS = Object.keys(themes.baseColors) as (keyof typeof themes.baseColors)[]
 
 // 26 种字体（v4 font-definitions，themes.json.fonts）
 type FontDef = { name: string; title: string; type: string; family: string; import: string }
@@ -303,7 +304,7 @@ export function ThemeSwitcher() {
       </div>
 
       {open.value && (
-        <>
+        <div class="actview-ui-switcher-body">
           {/* 风格（8） */}
           <div class="actview-ui-switcher-label">风格</div>
           <div class="actview-ui-switcher-row">
@@ -364,8 +365,10 @@ export function ThemeSwitcher() {
                 }
                 style={{
                   background:
-                    themes.baseColors[name]?.light?.primary ??
-                    themes.baseColors[name]?.light?.background ??
+                    themes.baseColors[name as keyof typeof themes.baseColors]
+                      ?.light?.primary ??
+                    themes.baseColors[name as keyof typeof themes.baseColors]
+                      ?.light?.background ??
                     "#888",
                 }}
                 title={`基色 ${name.charAt(0).toUpperCase() + name.slice(1)}`}
@@ -417,7 +420,9 @@ export function ThemeSwitcher() {
           <div class="actview-ui-switcher-label">字体</div>
           <select
             class="actview-ui-switcher-select"
-            onChange={(e) => setPref("font", (e.target as HTMLSelectElement).value)}
+            onChange={(e) =>
+              setPref("font", (e.target as unknown as HTMLSelectElement).value)
+            }
           >
             {ALL_FONTS.map((f) => (
               <option value={f.name} selected={prefs.value.font === f.name}>
@@ -429,7 +434,10 @@ export function ThemeSwitcher() {
           <select
             class="actview-ui-switcher-select"
             onChange={(e) =>
-              setPref("fontHeading", (e.target as HTMLSelectElement).value)
+              setPref(
+                "fontHeading",
+                (e.target as unknown as HTMLSelectElement).value
+              )
             }
           >
             <option value="inherit" selected={prefs.value.fontHeading === "inherit"}>
@@ -543,7 +551,7 @@ export function ThemeSwitcher() {
               🌙 暗色
             </button>
           </div>
-        </>
+        </div>
       )}
     </div>
   )
