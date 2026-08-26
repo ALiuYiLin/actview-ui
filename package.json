@@ -33,6 +33,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:react-ref": "vitest run --config vitest.react.config.ts",
+    "site:dev": "actview-press dev site",
+    "site:build": "actview-press build site",
+    "site:preview": "actview-press preview site",
     "prepublishOnly": "node scripts/build.mjs && pnpm run typecheck && pnpm test"
   },
   "devDependencies": {
@@ -41,9 +44,11 @@
     "@actview/jsx": "1.1.0",
     "@actview/lucide": "^0.0.1",
     "@actview/plugin-vite": "1.1.1",
+    "@actview/press": "1.0.19",
     "@actview/testing": "0.1.1",
     "@base-ui/react": "1.6.0",
     "@tailwindcss/node": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",

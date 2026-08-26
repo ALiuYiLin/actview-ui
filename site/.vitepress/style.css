@@ -1,0 +1,153 @@
+/* ActView UI 文档站样式
+   - tailwind v4 入口（组件工具类 + cn-* 语义类的 @apply 源）
+   - 三个视觉风格作用域样式表（body 挂 style-<name> 切换，registry 构建产物）
+   - @theme 默认变量（构建期解析 bg-input 等 @apply；运行时由主题注入 <style> 覆盖）
+   - 站点自身布局 + 主题切换面板样式 */
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "../../registry/styles/style-aurora.css";
+@import "../../registry/styles/style-ember.css";
+@import "../../registry/styles/style-mist.css";
+
+/* emerald 色板默认值（构建期解析 bg-input 等 @apply；运行时覆盖为注入值）。
+   themes.json 只含 11 个核心色；input/card/popover/accent 等衍生色取同系值 */
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #022c22;
+  --color-primary: #10b981;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #d1fae5;
+  --color-secondary-foreground: #065f46;
+  --color-muted: #f3f4f6;
+  --color-muted-foreground: #065f46;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  --color-border: rgba(16, 185, 129, 0.35);
+  --color-ring: #10b981;
+  --color-input: rgba(6, 95, 70, 0.2);
+  --color-card: #ffffff;
+  --color-card-foreground: #022c22;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #022c22;
+  --color-accent: #d1fae5;
+  --color-accent-foreground: #065f46;
+  --color-sidebar: #ffffff;
+  --color-sidebar-foreground: #022c22;
+  --color-sidebar-primary: #10b981;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: #d1fae5;
+  --color-sidebar-accent-foreground: #065f46;
+  --color-sidebar-border: rgba(16, 185, 129, 0.35);
+  --color-sidebar-ring: #10b981;
+  --radius-sm: 0.6rem;
+  --radius-md: 0.8rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.4rem;
+  --radius-2xl: 1.8rem;
+  --radius-3xl: 2.2rem;
+  --radius-4xl: 2.6rem;
+}
+
+/* 站点布局微调 */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.vp-doc .demo-grid {
+  @apply grid gap-4;
+}
+
+.vp-doc .demo-grid-cols-3 {
+  @apply grid grid-cols-1 gap-4 md:grid-cols-3;
+}
+
+/* 示例展示卡片（md 里用组件包一层） */
+.demo-card {
+  @apply flex flex-wrap items-center gap-3 rounded-xl border bg-background p-5;
+}
+
+.demo-card-column {
+  @apply flex flex-col items-start gap-3 rounded-xl border bg-background p-5;
+}
+
+/* 主题切换面板（fixed 右下角） */
+.actview-ui-switcher {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1000;
+  width: 248px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.12);
+  font-size: 12px;
+}
+
+.actview-ui-switcher-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.actview-ui-switcher-title button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.actview-ui-switcher-title button:hover {
+  background: var(--color-muted);
+}
+
+.actview-ui-switcher-label {
+  opacity: 0.7;
+  margin: 8px 0 4px;
+}
+
+.actview-ui-switcher-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.actview-ui-switcher-row button {
+  border: 1px solid var(--color-border);
+  background: var(--color-muted);
+  color: var(--color-foreground);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.actview-ui-switcher-row button.active {
+  border-color: var(--color-ring);
+  outline: 2px solid var(--color-ring);
+  outline-offset: 1px;
+}
+
+.actview-ui-switcher-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  cursor: pointer;
+  padding: 0;
+}
+
+.actview-ui-switcher-swatch.active {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}

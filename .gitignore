@@ -3,3 +3,5 @@ dist/
 *.tsbuildinfo
 .npmrc
 styles
+**/.vitepress/cache/
+**/.vitepress/dist/
