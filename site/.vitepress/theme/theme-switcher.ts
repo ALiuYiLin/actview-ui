@@ -5,6 +5,7 @@
 //   - 圆角：5 档（default/none/small/medium/large）
 //   - 明暗：html.dark
 //   - localStorage 持久化
+// 默认组合对齐 shadcn 官方：neutral 色板（黑 primary）+ neutral 基色
 import { buildThemeCssText } from "@/registry/bases/base/lib/theme"
 import themes from "@/styles/semantic/themes.json"
 
@@ -23,6 +24,11 @@ export type StyleName = (typeof STYLE_NAMES)[number]
 export const RADII = ["default", "none", "small", "medium", "large"] as const
 export type RadiusName = (typeof RADII)[number]
 
+const DEFAULT_STYLE: StyleName = "luma"
+const DEFAULT_PALETTE = "neutral"
+const DEFAULT_BASE_COLOR = "neutral"
+const DEFAULT_RADIUS: RadiusName = "default"
+
 // 24 色板（v4 themes 顺序），swatch 取色板 light.primary
 const ALL_PALETTES = Object.entries(themes.themes).map(([name, palette]) => ({
   name,
@@ -37,7 +43,6 @@ export const NEUTRAL_PALETTES = ALL_PALETTES.filter((p) =>
 type PaletteName = (typeof ALL_PALETTES)[number]["name"]
 
 const BASE_COLORS = Object.keys(themes.baseColors)
-const DEFAULT_BASE_COLOR = "neutral"
 
 interface Prefs {
   style: StyleName
@@ -49,27 +54,31 @@ interface Prefs {
 
 const STORAGE_KEY = "actview-ui-theme-prefs"
 
-function loadPrefs(): Prefs {
-  const fallback: Prefs = {
-    style: "luma",
-    palette: "emerald",
+function fallbackPrefs(): Prefs {
+  return {
+    style: DEFAULT_STYLE,
+    palette: DEFAULT_PALETTE,
     baseColor: DEFAULT_BASE_COLOR,
-    radius: "default",
+    radius: DEFAULT_RADIUS,
     dark: false,
   }
+}
+
+function loadPrefs(): Prefs {
+  const fallback = fallbackPrefs()
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
       return {
-        style: STYLE_NAMES.includes(parsed.style) ? parsed.style : "luma",
+        style: STYLE_NAMES.includes(parsed.style) ? parsed.style : DEFAULT_STYLE,
         palette: ALL_PALETTES.some((p) => p.name === parsed.palette)
           ? parsed.palette
-          : "emerald",
+          : DEFAULT_PALETTE,
         baseColor: BASE_COLORS.includes(parsed.baseColor)
           ? parsed.baseColor
           : DEFAULT_BASE_COLOR,
-        radius: RADII.includes(parsed.radius) ? parsed.radius : "default",
+        radius: RADII.includes(parsed.radius) ? parsed.radius : DEFAULT_RADIUS,
         dark: Boolean(parsed.dark),
       }
     }
@@ -150,10 +159,11 @@ function buildSwatch(
   value: string,
   title: string,
   color: string,
-  onClick: () => void
+  onClick: () => void,
+  className = "actview-ui-switcher-swatch"
 ): HTMLButtonElement {
   const btn = document.createElement("button")
-  btn.className = "actview-ui-switcher-swatch"
+  btn.className = className
   btn.dataset.value = value
   btn.title = title
   btn.style.background = color
@@ -161,14 +171,43 @@ function buildSwatch(
   return btn
 }
 
+function describePrefs(p: Prefs): string {
+  return `${p.style} · ${p.palette}${p.baseColor !== "neutral" ? `+${p.baseColor}` : ""} · r=${p.radius} · ${p.dark ? "dark" : "light"}`
+}
+
 function buildPanel(prefs: Prefs): HTMLElement {
   const panel = document.createElement("div")
   panel.className = "actview-ui-switcher"
 
-  // 标题 + 收起
+  // 标题：当前组合 + 重置 + 收起
   const title = document.createElement("div")
   title.className = "actview-ui-switcher-title"
-  title.innerHTML = "<span>主题定制</span>"
+  const titleText = document.createElement("span")
+  titleText.textContent = "主题定制"
+  title.appendChild(titleText)
+  const summary = document.createElement("span")
+  summary.className = "actview-ui-switcher-summary"
+  summary.textContent = describePrefs(prefs)
+  title.appendChild(summary)
+  const resetBtn = document.createElement("button")
+  resetBtn.textContent = "重置"
+  resetBtn.addEventListener("click", () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch {
+      /* ignore */
+    }
+    Object.assign(prefs, fallbackPrefs())
+    applyAll(prefs)
+    setActive(styleRow, prefs.style)
+    setActive(paletteRow, prefs.palette)
+    setActive(paletteRow2, prefs.palette)
+    setActive(baseRow, prefs.baseColor)
+    setActive(radiusRow, prefs.radius)
+    setActive(themeRow, prefs.dark ? "dark" : "light")
+    summary.textContent = describePrefs(prefs)
+  })
+  title.appendChild(resetBtn)
   const closeBtn = document.createElement("button")
   closeBtn.textContent = "✕"
   closeBtn.addEventListener("click", () => {
@@ -187,6 +226,7 @@ function buildPanel(prefs: Prefs): HTMLElement {
         applyStyle(name)
         savePrefs(prefs)
         setActive(styleRow, name)
+        summary.textContent = describePrefs(prefs)
       })
     )
   }
@@ -202,6 +242,7 @@ function buildPanel(prefs: Prefs): HTMLElement {
         applyThemeVars(prefs)
         savePrefs(prefs)
         setActive(paletteRow, p.name)
+        summary.textContent = describePrefs(prefs)
       })
     )
   }
@@ -214,24 +255,32 @@ function buildPanel(prefs: Prefs): HTMLElement {
         applyThemeVars(prefs)
         savePrefs(prefs)
         setActive(paletteRow2, p.name)
+        summary.textContent = describePrefs(prefs)
       })
     )
   }
   panel.appendChild(paletteRow2)
 
-  // 基色（7 中性）
+  // 基色（7 中性，方形色块与色板圆点区分）
   panel.appendChild(buildLabel("基色"))
   const baseRow = buildRow()
   for (const name of BASE_COLORS) {
     const color =
       themes.baseColors[name]?.light?.primary ?? themes.baseColors[name]?.light?.background ?? "#888"
     baseRow.appendChild(
-      buildSwatch(name, name.charAt(0).toUpperCase() + name.slice(1), color, () => {
-        prefs.baseColor = name
-        applyThemeVars(prefs)
-        savePrefs(prefs)
-        setActive(baseRow, name)
-      })
+      buildSwatch(
+        name,
+        `基色 ${name.charAt(0).toUpperCase() + name.slice(1)}`,
+        color,
+        () => {
+          prefs.baseColor = name
+          applyThemeVars(prefs)
+          savePrefs(prefs)
+          setActive(baseRow, name)
+          summary.textContent = describePrefs(prefs)
+        },
+        "actview-ui-switcher-swatch actview-ui-switcher-swatch-square"
+      )
     )
   }
   panel.appendChild(baseRow)
@@ -246,6 +295,7 @@ function buildPanel(prefs: Prefs): HTMLElement {
         applyThemeVars(prefs)
         savePrefs(prefs)
         setActive(radiusRow, name)
+        summary.textContent = describePrefs(prefs)
       })
     )
   }
@@ -260,6 +310,7 @@ function buildPanel(prefs: Prefs): HTMLElement {
       applyThemeVars(prefs)
       savePrefs(prefs)
       setActive(themeRow, "light")
+      summary.textContent = describePrefs(prefs)
     })
   )
   themeRow.appendChild(
@@ -268,6 +319,7 @@ function buildPanel(prefs: Prefs): HTMLElement {
       applyThemeVars(prefs)
       savePrefs(prefs)
       setActive(themeRow, "dark")
+      summary.textContent = describePrefs(prefs)
     })
   )
   panel.appendChild(themeRow)

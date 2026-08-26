@@ -100,6 +100,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 6px;
 }
 
 .actview-ui-switcher-title button {
@@ -114,6 +115,16 @@
 
 .actview-ui-switcher-title button:hover {
   background: var(--color-muted);
+}
+
+.actview-ui-switcher-summary {
+  font-weight: 400;
+  font-size: 11px;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
 }
 
 .actview-ui-switcher-label {
@@ -150,6 +161,12 @@
   border: 2px solid var(--color-border);
   cursor: pointer;
   padding: 0;
+}
+
+.actview-ui-switcher-swatch-square {
+  border-radius: 4px;
+  width: 20px;
+  height: 20px;
 }
 
 .actview-ui-switcher-swatch.active {
