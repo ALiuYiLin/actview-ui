@@ -29,7 +29,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "cli": "node bin/actview-ui.js",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p site/tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:react-ref": "vitest run --config vitest.react.config.ts",

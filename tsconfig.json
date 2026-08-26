@@ -30,8 +30,10 @@
     "dist",
     "test/fixtures/react-reference",
     "packages/base-ui/dist",
-    // 构建产物目录：不入类型检查（.vitepress 下源码已改为 import 源数据
-    // themes.json；styles/、.vitepress/cache|dist 是 press 生成的临时产物）
+    // site 是独立 TS 项目（site/tsconfig.json，含 .vitepress 与示例页），
+    // 根配置不重复检查（避免双 tsconfig paths 解析不一致导致误报）
+    "site",
+    // 构建产物目录：不入类型检查（styles/、.vitepress/cache|dist 是生成的临时产物）
     "styles",
     "styles/**",
     "**/.vitepress/cache/**",
