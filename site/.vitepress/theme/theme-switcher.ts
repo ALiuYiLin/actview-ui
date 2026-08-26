@@ -1,7 +1,9 @@
 // 主题切换器（纯 DOM 实现，fixed 右下角面板）：
 //   - 视觉风格：8 套官方样式（v4 registry/styles，body.style-<name> 作用域）
-//   - 色板：emerald / red / violet（buildThemeCssText 注入 --color-* 变量）
-//   - 明暗：html.dark（默认主题的暗色支持）
+//   - 色板：24 色（v4 themes，buildThemeCssText 注入 --color-* 变量）
+//   - 基色：7 个中性基色（v4 baseColors，与色板合并）
+//   - 圆角：5 档（default/none/small/medium/large）
+//   - 明暗：html.dark
 //   - localStorage 持久化
 import { buildThemeCssText } from "@/registry/bases/base/lib/theme"
 import themes from "@/styles/semantic/themes.json"
@@ -18,32 +20,56 @@ export const STYLE_NAMES = [
 ] as const
 export type StyleName = (typeof STYLE_NAMES)[number]
 
-const PALETTES = [
-  { name: "emerald", label: "Emerald", swatch: "#10b981" },
-  { name: "red", label: "Red", swatch: "#ef4444" },
-  { name: "violet", label: "Violet", swatch: "#8b5cf6" },
-] as const
-type PaletteName = (typeof PALETTES)[number]["name"]
+export const RADII = ["default", "none", "small", "medium", "large"] as const
+export type RadiusName = (typeof RADII)[number]
+
+// 24 色板（v4 themes 顺序），swatch 取色板 light.primary
+const ALL_PALETTES = Object.entries(themes.themes).map(([name, palette]) => ({
+  name,
+  label: name.charAt(0).toUpperCase() + name.slice(1),
+  swatch: palette.light?.primary ?? "#888888",
+}))
+const NEUTRAL_NAMES = ["neutral", "stone", "zinc", "mauve", "olive", "mist", "taupe"]
+export const PALETTES = ALL_PALETTES.filter((p) => !NEUTRAL_NAMES.includes(p.name))
+export const NEUTRAL_PALETTES = ALL_PALETTES.filter((p) =>
+  NEUTRAL_NAMES.includes(p.name)
+)
+type PaletteName = (typeof ALL_PALETTES)[number]["name"]
+
+const BASE_COLORS = Object.keys(themes.baseColors)
+const DEFAULT_BASE_COLOR = "neutral"
 
 interface Prefs {
   style: StyleName
   palette: PaletteName
+  baseColor: string
+  radius: RadiusName
   dark: boolean
 }
 
 const STORAGE_KEY = "actview-ui-theme-prefs"
 
 function loadPrefs(): Prefs {
-  const fallback: Prefs = { style: "luma", palette: "emerald", dark: false }
+  const fallback: Prefs = {
+    style: "luma",
+    palette: "emerald",
+    baseColor: DEFAULT_BASE_COLOR,
+    radius: "default",
+    dark: false,
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
       return {
         style: STYLE_NAMES.includes(parsed.style) ? parsed.style : "luma",
-        palette: PALETTES.some((p) => p.name === parsed.palette)
+        palette: ALL_PALETTES.some((p) => p.name === parsed.palette)
           ? parsed.palette
           : "emerald",
+        baseColor: BASE_COLORS.includes(parsed.baseColor)
+          ? parsed.baseColor
+          : DEFAULT_BASE_COLOR,
+        radius: RADII.includes(parsed.radius) ? parsed.radius : "default",
         dark: Boolean(parsed.dark),
       }
     }
@@ -63,17 +89,18 @@ function savePrefs(prefs: Prefs): void {
 
 let paletteStyleEl: HTMLStyleElement | null = null
 
-function applyPalette(palette: PaletteName, dark: boolean): void {
+function applyThemeVars(prefs: Prefs): void {
   if (!paletteStyleEl) {
     paletteStyleEl = document.createElement("style")
     paletteStyleEl.setAttribute("data-actview-ui-palette", "1")
     document.head.appendChild(paletteStyleEl)
   }
   paletteStyleEl.textContent = buildThemeCssText(themes, {
-    color: palette,
-    theme: dark ? "dark" : "light",
+    color: prefs.palette,
+    baseColor: prefs.baseColor,
+    radius: prefs.radius,
   })
-  document.documentElement.classList.toggle("dark", dark)
+  document.documentElement.classList.toggle("dark", prefs.dark)
 }
 
 function applyStyle(name: StyleName): void {
@@ -83,7 +110,7 @@ function applyStyle(name: StyleName): void {
 
 function applyAll(prefs: Prefs): void {
   applyStyle(prefs.style)
-  applyPalette(prefs.palette, prefs.dark)
+  applyThemeVars(prefs)
 }
 
 function setActive(container: HTMLElement, value: string): void {
@@ -92,6 +119,46 @@ function setActive(container: HTMLElement, value: string): void {
   )) {
     btn.classList.toggle("active", btn.dataset.value === value)
   }
+}
+
+function buildLabel(text: string): HTMLElement {
+  const label = document.createElement("div")
+  label.className = "actview-ui-switcher-label"
+  label.textContent = text
+  return label
+}
+
+function buildRow(): HTMLElement {
+  const row = document.createElement("div")
+  row.className = "actview-ui-switcher-row"
+  return row
+}
+
+function buildButton(
+  value: string,
+  text: string,
+  onClick: () => void
+): HTMLButtonElement {
+  const btn = document.createElement("button")
+  btn.dataset.value = value
+  btn.textContent = text
+  btn.addEventListener("click", onClick)
+  return btn
+}
+
+function buildSwatch(
+  value: string,
+  title: string,
+  color: string,
+  onClick: () => void
+): HTMLButtonElement {
+  const btn = document.createElement("button")
+  btn.className = "actview-ui-switcher-swatch"
+  btn.dataset.value = value
+  btn.title = title
+  btn.style.background = color
+  btn.addEventListener("click", onClick)
+  return btn
 }
 
 function buildPanel(prefs: Prefs): HTMLElement {
@@ -110,82 +177,107 @@ function buildPanel(prefs: Prefs): HTMLElement {
   title.appendChild(closeBtn)
   panel.appendChild(title)
 
-  // 风格
-  const styleLabel = document.createElement("div")
-  styleLabel.className = "actview-ui-switcher-label"
-  styleLabel.textContent = "风格"
-  panel.appendChild(styleLabel)
-  const styleRow = document.createElement("div")
-  styleRow.className = "actview-ui-switcher-row"
+  // 风格（8）
+  panel.appendChild(buildLabel("风格"))
+  const styleRow = buildRow()
   for (const name of STYLE_NAMES) {
-    const btn = document.createElement("button")
-    btn.dataset.value = name
-    btn.textContent = name.charAt(0).toUpperCase() + name.slice(1)
-    btn.addEventListener("click", () => {
-      prefs.style = name
-      applyStyle(name)
-      savePrefs(prefs)
-      setActive(styleRow, name)
-    })
-    styleRow.appendChild(btn)
+    styleRow.appendChild(
+      buildButton(name, name.charAt(0).toUpperCase() + name.slice(1), () => {
+        prefs.style = name
+        applyStyle(name)
+        savePrefs(prefs)
+        setActive(styleRow, name)
+      })
+    )
   }
   panel.appendChild(styleRow)
 
-  // 色板
-  const paletteLabel = document.createElement("div")
-  paletteLabel.className = "actview-ui-switcher-label"
-  paletteLabel.textContent = "色板"
-  panel.appendChild(paletteLabel)
-  const paletteRow = document.createElement("div")
-  paletteRow.className = "actview-ui-switcher-row"
-  for (const palette of PALETTES) {
-    const btn = document.createElement("button")
-    btn.className = "actview-ui-switcher-swatch"
-    btn.dataset.value = palette.name
-    btn.title = palette.label
-    btn.style.background = palette.swatch
-    btn.addEventListener("click", () => {
-      prefs.palette = palette.name
-      applyPalette(palette.name, prefs.dark)
-      savePrefs(prefs)
-      setActive(paletteRow, palette.name)
-    })
-    paletteRow.appendChild(btn)
+  // 色板（24：中性 7 + 彩色 17）
+  panel.appendChild(buildLabel("色板"))
+  const paletteRow = buildRow()
+  for (const p of NEUTRAL_PALETTES) {
+    paletteRow.appendChild(
+      buildSwatch(p.name, p.label, p.swatch, () => {
+        prefs.palette = p.name
+        applyThemeVars(prefs)
+        savePrefs(prefs)
+        setActive(paletteRow, p.name)
+      })
+    )
   }
   panel.appendChild(paletteRow)
+  const paletteRow2 = buildRow()
+  for (const p of PALETTES) {
+    paletteRow2.appendChild(
+      buildSwatch(p.name, p.label, p.swatch, () => {
+        prefs.palette = p.name
+        applyThemeVars(prefs)
+        savePrefs(prefs)
+        setActive(paletteRow2, p.name)
+      })
+    )
+  }
+  panel.appendChild(paletteRow2)
+
+  // 基色（7 中性）
+  panel.appendChild(buildLabel("基色"))
+  const baseRow = buildRow()
+  for (const name of BASE_COLORS) {
+    const color =
+      themes.baseColors[name]?.light?.primary ?? themes.baseColors[name]?.light?.background ?? "#888"
+    baseRow.appendChild(
+      buildSwatch(name, name.charAt(0).toUpperCase() + name.slice(1), color, () => {
+        prefs.baseColor = name
+        applyThemeVars(prefs)
+        savePrefs(prefs)
+        setActive(baseRow, name)
+      })
+    )
+  }
+  panel.appendChild(baseRow)
+
+  // 圆角（5 档）
+  panel.appendChild(buildLabel("圆角"))
+  const radiusRow = buildRow()
+  for (const name of RADII) {
+    radiusRow.appendChild(
+      buildButton(name, name.charAt(0).toUpperCase() + name.slice(1), () => {
+        prefs.radius = name
+        applyThemeVars(prefs)
+        savePrefs(prefs)
+        setActive(radiusRow, name)
+      })
+    )
+  }
+  panel.appendChild(radiusRow)
 
   // 明暗
-  const themeLabel = document.createElement("div")
-  themeLabel.className = "actview-ui-switcher-label"
-  themeLabel.textContent = "模式"
-  panel.appendChild(themeLabel)
-  const themeRow = document.createElement("div")
-  themeRow.className = "actview-ui-switcher-row"
-  const lightBtn = document.createElement("button")
-  lightBtn.dataset.value = "light"
-  lightBtn.textContent = "☀ 亮色"
-  lightBtn.addEventListener("click", () => {
-    prefs.dark = false
-    applyPalette(prefs.palette, false)
-    savePrefs(prefs)
-    setActive(themeRow, "light")
-  })
-  themeRow.appendChild(lightBtn)
-  const darkBtn = document.createElement("button")
-  darkBtn.dataset.value = "dark"
-  darkBtn.textContent = "🌙 暗色"
-  darkBtn.addEventListener("click", () => {
-    prefs.dark = true
-    applyPalette(prefs.palette, true)
-    savePrefs(prefs)
-    setActive(themeRow, "dark")
-  })
-  themeRow.appendChild(darkBtn)
+  panel.appendChild(buildLabel("模式"))
+  const themeRow = buildRow()
+  themeRow.appendChild(
+    buildButton("light", "☀ 亮色", () => {
+      prefs.dark = false
+      applyThemeVars(prefs)
+      savePrefs(prefs)
+      setActive(themeRow, "light")
+    })
+  )
+  themeRow.appendChild(
+    buildButton("dark", "🌙 暗色", () => {
+      prefs.dark = true
+      applyThemeVars(prefs)
+      savePrefs(prefs)
+      setActive(themeRow, "dark")
+    })
+  )
   panel.appendChild(themeRow)
 
   // 初始高亮
   setActive(styleRow, prefs.style)
   setActive(paletteRow, prefs.palette)
+  setActive(paletteRow2, prefs.palette)
+  setActive(baseRow, prefs.baseColor)
+  setActive(radiusRow, prefs.radius)
   setActive(themeRow, prefs.dark ? "dark" : "light")
 
   return panel
