@@ -29,6 +29,12 @@
     "node_modules",
     "dist",
     "test/fixtures/react-reference",
-    "packages/base-ui/dist"
+    "packages/base-ui/dist",
+    // 构建产物目录：不入类型检查（.vitepress 下源码已改为 import 源数据
+    // themes.json；styles/、.vitepress/cache|dist 是 press 生成的临时产物）
+    "styles",
+    "styles/**",
+    "**/.vitepress/cache/**",
+    "**/.vitepress/dist/**"
   ]
 }

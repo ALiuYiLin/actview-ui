@@ -44,7 +44,7 @@
     "@actview/jsx": "1.1.0",
     "@actview/lucide": "^0.0.1",
     "@actview/plugin-vite": "1.1.1",
-    "@actview/press": "1.0.19",
+    "@actview/press": "1.0.20",
     "@actview/testing": "0.1.1",
     "@base-ui/react": "1.6.0",
     "@tailwindcss/node": "^4.3.3",
