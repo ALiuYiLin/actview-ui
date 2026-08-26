@@ -30,9 +30,16 @@
 
 ### M1 剩余
 
-- [ ] **增量冻结**：8 个无冻结源的组件（freeze-react-reference 扩展后重采）：
+- [x] **增量冻结**：8 个无冻结源的组件（freeze-react-reference 扩展后重采）：
       badge / marker / bubble / item / attachment / breadcrumb / button-group / input-otp
-- [ ] 上述 8 个组件迁移（toRefs 模式 + golden 用例）
+      （7 个已冻结 + 迁移；input-otp 见下）
+- [x] 7 个组件迁移 + golden 对比 12 用例全绿（badge/button-group/marker/bubble/item/attachment/breadcrumb）
+- [ ] **input-otp：跳过（记录原因）**——依赖第三方 npm 包 `input-otp`（React 版
+      `OTPInput`/`OTPInputContext`），@actview 生态无对应移植；等 actview 侧有
+      OTP 原语或用户决定自研后再迁移。代码：`registry/bases/base/ui/input-otp.tsx` 缺失
+- [ ] **render prop（useRender）未移植（记录原因）**——v4 静态组件用 React
+      `useRender` 的 `render` prop 换标签渲染；actview 无等价物，迁移时解构剔除
+      （`void render`），需要 `render` 的用法（as-child 模式）暂不可用。见 docs/BUGS.md E 组
 - [ ] registry.json 增量更新（gen-registry-json.mjs merge 模式）+ styles 重建
 - [ ] docs 站组件页补齐（site/components/*.md + examples，当前仅 button/card）
 

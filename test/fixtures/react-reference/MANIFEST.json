@@ -117,6 +117,34 @@
     {
       "from": "apps/v4/registry/bases/base/ui/direction.tsx",
       "to": "src/registry/bases/base/ui/direction.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/badge.tsx",
+      "to": "src/registry/bases/base/ui/badge.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/button-group.tsx",
+      "to": "src/registry/bases/base/ui/button-group.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/marker.tsx",
+      "to": "src/registry/bases/base/ui/marker.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/bubble.tsx",
+      "to": "src/registry/bases/base/ui/bubble.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/item.tsx",
+      "to": "src/registry/bases/base/ui/item.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/attachment.tsx",
+      "to": "src/registry/bases/base/ui/attachment.tsx"
+    },
+    {
+      "from": "apps/v4/registry/bases/base/ui/breadcrumb.tsx",
+      "to": "src/registry/bases/base/ui/breadcrumb.tsx"
     }
   ],
   "notes": [

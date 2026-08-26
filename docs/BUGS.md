@@ -96,6 +96,20 @@
 
 ---
 
+## E. 消费方已知缺口（非 @actview/base-ui 缺陷，记录备查）
+
+> 这些不是 port bug，而是 actview 生态尚未提供的能力，迁移时显式解构剔除
+> （组件内 `void render`），不参与 golden 对比（用例不带 render prop）。
+
+- [ ] **E1. `render` prop（React useRender 的 as-child 换标签）未移植**
+  - 涉及组件：Badge / Marker / Item / BubbleContent / ButtonGroupText /
+    BreadcrumbLink / AttachmentTrigger（7 个静态组件的 useRender）
+  - 原因：actview 无 useRender 等价物；`render={<a/>}` 等换标签用法暂不可用
+  - 修复方向：actview 提供 as-child 原语后，为这 7 个组件补 render 支持并加 golden 用例
+  - 验证：组件文件里仍有 `void render` 标记（移除后即修复）
+
+---
+
 ## 备注
 
 - 临时 patch 位置：`node_modules/.pnpm/@actview+base-ui@0.1.0_@act_*…/node_modules/@actview/base-ui/dist/index.mjs`
