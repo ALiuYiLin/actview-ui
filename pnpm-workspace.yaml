@@ -9,6 +9,8 @@ minimumReleaseAgeExclude:
   - "@actview/testing"
   - "@actview/plugin-vite"
   - "@actview/plugin-babel"
+  - "@actview/base-ui"
+  - "@actview/base-ui-utils"
 
 # actview 生态全部本地链接源码仓库（packages/base-ui 已删除）：
 #   - actview / @actview/core / @actview/jsx / @actview/plugin-vite / @actview/testing

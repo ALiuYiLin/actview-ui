@@ -48,37 +48,9 @@ describe("CLI init", () => {
 })
 
 describe("CLI add", () => {
-  it("button-group：依赖树 + import 重写 + 图标替换 + 落盘", async () => {
-    await runInitCommand({ cwd: dir, style: "base-aurora" })
-    await runAddCommand({
-      cwd: dir,
-      items: ["button-group"],
-      style: "base-aurora",
-    })
-
-    const group = await readFile(
-      path.join(dir, "components", "ui", "button-group.tsx"),
-      "utf8"
-    )
-    expect(group).toContain('import { ChevronDown } from "@actview/lucide"')
-    expect(group).toContain('from "@/components/ui/separator"')
-    expect(group).toContain('from "@/lib/utils"')
-    // 占位符的 import 与 JSX 均被替换（注释里的说明文字不算）
-    expect(group).not.toMatch(/import\s*\{[^}]*IconPlaceholder[^}]*\}/)
-    expect(group).not.toContain("<IconPlaceholder")
-
-    // separator 依赖被先行安装
-    const sep = await readFile(
-      path.join(dir, "components", "ui", "separator.tsx"),
-      "utf8"
-    )
-    expect(sep).toContain('data-slot="separator"')
-
-    // icon-placeholder 不再随组件落盘（transform-icons 已替换）
-    await expect(
-      access(path.join(dir, "components", "icon-placeholder.tsx"))
-    ).rejects.toThrow()
-  })
+  // button-group 用例（依赖树 + 图标替换）已随组件删除暂挂，M1 重写组件时恢复。
+  // 当前 registry 仅 button/icon-placeholder/utils 三个 item，此处覆盖 button
+  // 的 add 路径 + semantic 路径。
 
   it("重复 add 内容相同 → 产物不变", async () => {
     await runInitCommand({ cwd: dir })
@@ -101,23 +73,18 @@ describe("CLI add", () => {
     ).rejects.toThrow(/actview-ui init/)
   })
 
-  it("add --semantic：cn-* 保留 + 作用域样式表 + 占位组件落盘", async () => {
+  it("add --semantic：cn-* 保留 + 作用域样式表落盘", async () => {
     await runInitCommand({ cwd: dir, style: "base-aurora" })
-    await runAddCommand({ cwd: dir, items: ["button-group"], semantic: true })
+    await runAddCommand({ cwd: dir, items: ["button"], semantic: true })
 
-    const group = await readFile(
-      path.join(dir, "components", "ui", "button-group.tsx"),
+    const btn = await readFile(
+      path.join(dir, "components", "ui", "button.tsx"),
       "utf8"
     )
     // 语义类保留、图标不替换
-    expect(group).toContain("cn-button-group")
-    expect(group).toContain("<IconPlaceholder")
-    expect(group).toContain('from "@/components/ui/separator"')
-    expect(group).toContain('from "@/components/icon-placeholder"')
-    expect(group).not.toMatch(/import\s*\{[^}]*\}\s*from\s*"@actview\/lucide"/)
-
-    // semanticDependencies：icon-placeholder 组件落盘
-    await access(path.join(dir, "components", "icon-placeholder.tsx"))
+    expect(btn).toContain("cn-button")
+    expect(btn).toContain('from "@/lib/utils"')
+    expect(btn).not.toMatch(/import\s*\{[^}]*\}\s*from\s*"@actview\/lucide"/)
 
     // 作用域样式表落盘
     const css = await readFile(

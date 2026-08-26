@@ -1,10 +1,9 @@
 // 复刻 shadcn/ui registry/bases/base/ui/button.tsx（源 commit a85299a）的结构，
 // 框架层 actview：
-//   - 原语层 @base-ui/actview/button（Base UI → actview 完整移植库，本地链接
-//     E:\code3\base-ui\packages\actview）
+//   - 原语层 @actview/base-ui（Base UI → actview 完整移植库，npm 安装 v0.1.0）
 //   - 规范写法：函数组件 + useProps（.value 惰性取值，class/className 双写，
 //     解构后不进 rest 透传避免 DOM 覆盖）
-import { Button as ButtonPrimitive } from "@base-ui/actview/button"
+import { Button as ButtonPrimitive } from "@actview/base-ui"
 import { computed, useProps } from "@actview/core"
 import { cva, type VariantProps } from "class-variance-authority"
 

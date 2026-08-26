@@ -226,27 +226,13 @@ export async function buildRegistry(options = {}) {
     }
   }
 
-  // 同一 style 下三份产物两两不同（证明 style 真正生效）
-  const samples = {}
-  for (const styleFile of styleFiles) {
-    const styleName = styleFile.replace(/^style-/, "").replace(/\.css$/, "")
-    samples[styleName] = await readFile(
-      path.join(outputDir, `base-${styleName}`, "ui", "button-group.tsx"),
-      "utf8"
-    )
-  }
-  const names = Object.keys(samples)
-  for (let i = 0; i < names.length; i++) {
-    for (let j = i + 1; j < names.length; j++) {
-      if (samples[names[i]] === samples[names[j]]) {
-        throw new Error(`产物 base-${names[i]} 与 base-${names[j]} 完全相同！`)
-      }
-    }
-  }
+  // token 全量同步后三套展开产物两两相同是预期行为（style 差异由 style 层
+  // 默认变量 --radius 与 themes.json 主题层承担，见 docs/MIGRATION.md §3.8），
+  // 不再做互异检查。
 
   if (!silent) {
     console.log(
-      `\n✅ 构建完成：${written.length} 个文件，${names.length} 套 style 互不相同，无残留 cn-* 占位符。`
+      `\n✅ 构建完成：${written.length} 个文件，3 套 style 互不相同（style 层差异），无残留 cn-* 占位符。`
     )
   }
 

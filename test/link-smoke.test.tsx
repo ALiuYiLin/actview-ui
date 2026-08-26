@@ -1,15 +1,15 @@
-// 冒烟测试：本地链接的 @base-ui/actview 移植库能否被 vitest 转译 + 渲染。
-// 验证链路：link 协议 → vite fs.allow → deps.inline 转译源码 TS → actviewPlugin
-// Babel 转换 → @actview/testing render → happy-dom DOM 断言。
+// 冒烟测试：npm 安装的 @actview/base-ui（Base UI → actview 移植库，dist 构建产物）
+// 能否被 vitest 渲染。验证链路：npm 包 → actviewPlugin Babel 转换 → @actview/testing
+// render → happy-dom DOM 断言。
 import { afterEach, describe, expect, it } from "vitest"
 import { cleanup, render } from "@actview/testing"
-import { Button } from "@base-ui/actview/button"
+import { Button } from "@actview/base-ui"
 
 afterEach(() => {
   cleanup()
 })
 
-describe("local-linked @base-ui/actview", () => {
+describe("npm @actview/base-ui", () => {
   it("renders ported Button with correct DOM contract", () => {
     function App() {
       return (

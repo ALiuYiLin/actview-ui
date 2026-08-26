@@ -80,15 +80,16 @@ describe("buildRegistry（路径①：展开产物）", () => {
     expect(new Set(radiusValues).size).toBe(3)
   })
 
-  it("产物 import 重写正确（ui 互引 / lib/utils / icon-placeholder）", async () => {
+  it("产物 import 重写正确（原语库 / lib/utils）", async () => {
     await buildRegistry({ silent: true })
-    const group = await readFile(
-      path.join(STYLES_ROOT, "base-aurora", "ui", "button-group.tsx"),
+    const btn = await readFile(
+      path.join(STYLES_ROOT, "base-aurora", "ui", "button.tsx"),
       "utf8"
     )
-    expect(group).toContain("@/styles/base-aurora/ui/separator")
-    expect(group).toContain("@/styles/base-aurora/components/icon-placeholder")
-    expect(group).toContain("@/lib/utils")
+    expect(btn).toContain('from "@actview/base-ui"')
+    expect(btn).toContain("@/lib/utils")
+    // 组件产物互引路径已重写为 styles 体系（无跨 ui 引用时至少 lib 生效）
+    expect(btn).not.toContain("@/registry/")
   })
 })
 
@@ -106,15 +107,6 @@ describe("buildSemanticRegistry（路径②：自由切换）", () => {
     expect(btn).toMatch(/"cn-button/)
     expect(btn).toContain('"cn-button-variant-default"')
     expect(btn).toContain("@/lib/utils")
-
-    // 互引走 semantic 体系
-    const group = await readFile(
-      path.join(STYLES_ROOT, "semantic", "ui", "button-group.tsx"),
-      "utf8"
-    )
-    expect(group).toContain("@/styles/semantic/ui/separator")
-    expect(group).toContain("@/styles/semantic/components/icon-placeholder")
-    expect(group).toContain("<IconPlaceholder")
 
     // 作用域样式表：三套 .style-<name> + .cn-* 规则
     const css = await readFile(

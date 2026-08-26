@@ -1,4 +1,4 @@
-// 临时验证：重写后的 registry button（基于 @base-ui/actview/button）DOM 与
+// 临时验证：重写后的 registry button（基于 @actview/base-ui）DOM 与
 // React golden 逐字节一致。验证通过后并入 golden-diff.test.tsx 正式用例。
 import { afterEach, describe, expect, it } from "vitest"
 import { readFileSync } from "node:fs"
@@ -26,7 +26,7 @@ afterEach(() => {
   cleanup()
 })
 
-describe("port-primitive button golden", () => {
+describe("actview/base-ui button golden", () => {
   it("button.default", () => {
     function App() {
       return <Button>Hello</Button>

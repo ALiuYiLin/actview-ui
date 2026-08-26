@@ -174,7 +174,7 @@ describe("spike: actview 能力边界", () => {
     expect(container.querySelectorAll("b").length).toBe(1)
   })
 
-  it("style 对象：普通属性生效；CSS 变量缺口与命令式 setProperty workaround", () => {
+  it("style 对象：普通属性 + CSS 自定义属性均生效", () => {
     function App() {
       return (
         <div
@@ -186,12 +186,11 @@ describe("spike: actview 能力边界", () => {
     const { container } = render(App)
     const el = container.querySelector("[data-testid=styled]") as HTMLElement
     expect(el.style.color).toBe("red")
-    // 缺口（actview 仓库 backlog）：style 对象经 Object.assign 写入，
-    // CSS 自定义属性（--x）不走 setProperty，不生效。
-    expect(el.style.getPropertyValue("--accordion-panel-height")).toBe("")
+    // actview 已修复：style 对象中的 CSS 自定义属性（--x）经 setProperty 生效
+    // （旧断言认为这是缺口，actview 源码演进后已闭合）
+    expect(el.style.getPropertyValue("--accordion-panel-height")).toBe("120px")
 
-    // workaround：原语层用 ref + setProperty 命令式设置（accordion 高度
-    // 测量场景本来就命令式，天然兼容）。
+    // 命令式 setProperty 依然可用（accordion 高度测量等场景）
     function AppImperative() {
       return <div ref={(el: HTMLElement) => el.style.setProperty("--h", "99px")} />
     }

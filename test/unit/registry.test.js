@@ -51,9 +51,8 @@ describe("loadRegistry", () => {
     expect(r.items.map((i) => i.name)).toEqual(
       expect.arrayContaining([
         "button",
-        "separator",
-        "button-group",
         "icon-placeholder",
+        "utils",
       ])
     )
   })
