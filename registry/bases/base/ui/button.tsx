@@ -1,10 +1,11 @@
 // 复刻 shadcn/ui registry/bases/base/ui/button.tsx（源 commit a85299a）的结构，
 // 框架层 actview：
 //   - 原语层 @actview/base-ui（Base UI → actview 完整移植库，npm 安装 v0.1.0）
-//   - 规范写法：函数组件 + useProps（.value 惰性取值，class/className 双写，
-//     解构后不进 rest 透传避免 DOM 覆盖）
+//   - 规范写法：toRefs(props) 解构 → JSX 属性自动解包 Ref（顶层 ref 属性在
+//     jsxFactory unwrapProps 自动取 .value），rest 直接 spread 透传；
+//     class/className 双写归一化（React 迁移别名），默认值交给 cva defaultVariants
 import { Button as ButtonPrimitive } from "@actview/base-ui"
-import { computed, useProps } from "@actview/core"
+import { computed, toRefs } from "@actview/core"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/registry/bases/base/lib/utils"
@@ -41,37 +42,42 @@ const buttonVariants = cva(
 
 function Button(props: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
   const {
-    variant,
-    size,
     class: className,
     className: legacyClassName,
-    rest,
-  } = useProps(props, {
-    variant: (v) => v ?? "default",
-    size: (v) => v ?? "default",
-    class: undefined,
-    className: undefined,
-  })
+    variant,
+    size,
+    key,
+    ...rest
+  } = toRefs(props)
 
-  // computed 惰性合并：setup 只跑一次，class 变更（含 React 迁移的 className
-  // 别名）在依赖变化时重算，mergeClassName 永不出现快照过期问题
-  const variantClassName = computed(() =>
-    cn(
+  // computed 惰性合并：class 变更（含 React 迁移的 className 别名）在依赖
+  // 变化时重算；variant/size 未传时 cva defaultVariants 兜底。
+  // key 由 JSX 层单独处理（IntrinsicAttributes 不接受 Ref），解构剔除不透传。
+  void key
+  const variantClassName = computed(() => {
+    const cls = className?.value
+    const legacy = legacyClassName?.value
+    return cn(
       buttonVariants({
-        variant: variant.value,
-        size: size.value,
-        className: cn(className.value, legacyClassName.value),
+        variant: variant?.value,
+        size: size?.value,
+        className: cn(
+          typeof cls === "string" ? cls : undefined,
+          typeof legacy === "string" ? legacy : undefined
+        ),
       })
     )
-  )
+  })
 
   return (
     <ButtonPrimitive
       data-slot="button"
-      className={variantClassName.value}
-      {...rest.value}
+      className={variantClassName}
+      {...rest}
     />
   )
 }
 
 export { Button, buttonVariants }
+export type ButtonPrimitiveProps = ButtonPrimitive.Props
+export type ButtonProps = ButtonPrimitive.Props & VariantProps<typeof buttonVariants>

@@ -14,7 +14,14 @@
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*",
+        // 临时兜底：@actview/base-ui@0.1.0 的 build/*.d.ts 残留 `@/` 内部别名
+        // （tsgo 构建不解析 paths），消费方解析不到会导致组件 Props 类型链
+        // 断裂（如 Button.Props 只剩自身声明的键）。映射到包内 build 目录
+        // 解锁类型；port 重新发布（d.ts 改相对路径）后删除本候选。
+        "./node_modules/@actview/base-ui/build/*"
+      ]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
