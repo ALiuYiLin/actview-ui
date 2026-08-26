@@ -23,6 +23,10 @@ export type Themes = {
 export type ThemeOptions = {
   color?: string
   baseColor?: string
+  /** 图表色（chart-1~5 覆盖，默认跟随 color） */
+  chartColor?: string
+  /** 菜单强调：subtle（默认）| bold（accent ← primary，v4 语义） */
+  menuAccent?: "subtle" | "bold"
   radius?: string
 }
 
@@ -77,7 +81,38 @@ export function buildThemeCssText(
   // 合并：基色全量 + 色板覆盖（v4 buildTheme 语义）
   const light = { ...(base.light ?? {}), ...(palette.light ?? {}) }
   const dark = { ...(base.dark ?? {}), ...(palette.dark ?? {}) }
-  const radius = palette.light?.radius ?? base.light?.radius ?? undefined
+
+  // chartColor 覆盖：chart-1~5 用图表色的 chart-* 值（v4 buildRegistryTheme 语义）
+  if (options.chartColor && options.chartColor !== color) {
+    const chartPalette = themes.themes[options.chartColor]
+    if (chartPalette) {
+      for (let i = 1; i <= 5; i++) {
+        const key = `chart-${i}`
+        if (chartPalette.light?.[key]) light[key] = chartPalette.light[key]
+        if (chartPalette.dark?.[key]) dark[key] = chartPalette.dark[key]
+      }
+    }
+  }
+
+  // menuAccent = bold：accent/accent-foreground ← primary/primary-foreground
+  // （v4 buildRegistryTheme 语义，影响菜单 hover 等强调视觉）
+  if (options.menuAccent === "bold") {
+    if (light.primary) {
+      light.accent = light.primary
+      light["accent-foreground"] = light["primary-foreground"] ?? light.accent
+    }
+    if (dark.primary) {
+      dark.accent = dark.primary
+      dark["accent-foreground"] = dark["primary-foreground"] ?? dark.accent
+    }
+  }
+
+  // radius：v4 语义 —— 非 default 档直接覆盖 lightVars.radius（:root 变量生效）
+  const radiusValue = themes.radii?.[options.radius ?? "default"] ?? null
+  if (radiusValue) {
+    light.radius = radiusValue
+  }
+  const radius = light.radius ?? base.light?.radius ?? undefined
 
   let css = "/* @actview/ui 主题变量（自动生成，勿手改）*/\n"
   css += buildCssRule(":root", light)
@@ -87,12 +122,6 @@ export function buildThemeCssText(
     css += `:root {\n  --radius: ${radius};\n}\n`
   }
   css += buildRadiusScaleRule()
-
-  // radii 档位覆盖（default 表示沿用色板内嵌值，不输出）
-  const radiusValue = themes.radii?.[options.radius ?? "default"] ?? null
-  if (radiusValue) {
-    css += `body.radius-${options.radius} {\n  --radius: ${radiusValue};\n}\n`
-  }
 
   return css
 }

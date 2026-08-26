@@ -1446,6 +1446,190 @@
       }
     }
   },
+  "fonts": [
+    {
+      "name": "geist",
+      "title": "Geist",
+      "type": "sans",
+      "family": "'Geist Variable', sans-serif",
+      "import": "Geist"
+    },
+    {
+      "name": "inter",
+      "title": "Inter",
+      "type": "sans",
+      "family": "'Inter Variable', sans-serif",
+      "import": "Inter"
+    },
+    {
+      "name": "noto-sans",
+      "title": "Noto Sans",
+      "type": "sans",
+      "family": "'Noto Sans Variable', sans-serif",
+      "import": "Noto_Sans"
+    },
+    {
+      "name": "nunito-sans",
+      "title": "Nunito Sans",
+      "type": "sans",
+      "family": "'Nunito Sans Variable', sans-serif",
+      "import": "Nunito_Sans"
+    },
+    {
+      "name": "figtree",
+      "title": "Figtree",
+      "type": "sans",
+      "family": "'Figtree Variable', sans-serif",
+      "import": "Figtree"
+    },
+    {
+      "name": "roboto",
+      "title": "Roboto",
+      "type": "sans",
+      "family": "'Roboto Variable', sans-serif",
+      "import": "Roboto"
+    },
+    {
+      "name": "raleway",
+      "title": "Raleway",
+      "type": "sans",
+      "family": "'Raleway Variable', sans-serif",
+      "import": "Raleway"
+    },
+    {
+      "name": "dm-sans",
+      "title": "DM Sans",
+      "type": "sans",
+      "family": "'DM Sans Variable', sans-serif",
+      "import": "DM_Sans"
+    },
+    {
+      "name": "public-sans",
+      "title": "Public Sans",
+      "type": "sans",
+      "family": "'Public Sans Variable', sans-serif",
+      "import": "Public_Sans"
+    },
+    {
+      "name": "outfit",
+      "title": "Outfit",
+      "type": "sans",
+      "family": "'Outfit Variable', sans-serif",
+      "import": "Outfit"
+    },
+    {
+      "name": "oxanium",
+      "title": "Oxanium",
+      "type": "sans",
+      "family": "'Oxanium Variable', sans-serif",
+      "import": "Oxanium"
+    },
+    {
+      "name": "manrope",
+      "title": "Manrope",
+      "type": "sans",
+      "family": "'Manrope Variable', sans-serif",
+      "import": "Manrope"
+    },
+    {
+      "name": "space-grotesk",
+      "title": "Space Grotesk",
+      "type": "sans",
+      "family": "'Space Grotesk Variable', sans-serif",
+      "import": "Space_Grotesk"
+    },
+    {
+      "name": "montserrat",
+      "title": "Montserrat",
+      "type": "sans",
+      "family": "'Montserrat Variable', sans-serif",
+      "import": "Montserrat"
+    },
+    {
+      "name": "ibm-plex-sans",
+      "title": "IBM Plex Sans",
+      "type": "sans",
+      "family": "'IBM Plex Sans Variable', sans-serif",
+      "import": "IBM_Plex_Sans"
+    },
+    {
+      "name": "source-sans-3",
+      "title": "Source Sans 3",
+      "type": "sans",
+      "family": "'Source Sans 3 Variable', sans-serif",
+      "import": "Source_Sans_3"
+    },
+    {
+      "name": "instrument-sans",
+      "title": "Instrument Sans",
+      "type": "sans",
+      "family": "'Instrument Sans Variable', sans-serif",
+      "import": "Instrument_Sans"
+    },
+    {
+      "name": "jetbrains-mono",
+      "title": "JetBrains Mono",
+      "type": "mono",
+      "family": "'JetBrains Mono Variable', monospace",
+      "import": "JetBrains_Mono"
+    },
+    {
+      "name": "geist-mono",
+      "title": "Geist Mono",
+      "type": "mono",
+      "family": "'Geist Mono Variable', monospace",
+      "import": "Geist_Mono"
+    },
+    {
+      "name": "noto-serif",
+      "title": "Noto Serif",
+      "type": "serif",
+      "family": "'Noto Serif Variable', serif",
+      "import": "Noto_Serif"
+    },
+    {
+      "name": "roboto-slab",
+      "title": "Roboto Slab",
+      "type": "serif",
+      "family": "'Roboto Slab Variable', serif",
+      "import": "Roboto_Slab"
+    },
+    {
+      "name": "merriweather",
+      "title": "Merriweather",
+      "type": "serif",
+      "family": "'Merriweather Variable', serif",
+      "import": "Merriweather"
+    },
+    {
+      "name": "lora",
+      "title": "Lora",
+      "type": "serif",
+      "family": "'Lora Variable', serif",
+      "import": "Lora"
+    },
+    {
+      "name": "playfair-display",
+      "title": "Playfair Display",
+      "type": "serif",
+      "family": "'Playfair Display Variable', serif",
+      "import": "Playfair_Display"
+    },
+    {
+      "name": "eb-garamond",
+      "title": "EB Garamond",
+      "type": "serif",
+      "family": "'EB Garamond Variable', serif",
+      "import": "EB_Garamond"
+    },
+    {
+      "name": "instrument-serif",
+      "title": "Instrument Serif",
+      "type": "serif",
+      "family": "'Instrument Serif', serif",
+      "import": "Instrument_Serif"
+    }
+  ],
   "radii": {
     "default": null,
     "none": "0",

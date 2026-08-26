@@ -148,6 +148,16 @@
   cursor: pointer;
 }
 
+.actview-ui-switcher-select {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  background: var(--color-muted);
+  color: var(--color-foreground);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
 .actview-ui-switcher-row button.active {
   border-color: var(--color-ring);
   outline: 2px solid var(--color-ring);

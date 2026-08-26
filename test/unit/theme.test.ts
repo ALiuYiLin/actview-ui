@@ -48,24 +48,48 @@ describe("buildThemeCssText（主题注入，路径③）", () => {
     expect(red).toContain("--color-primary: oklch")
   })
 
-  it("radius 档位：none/small/medium/large 输出 body 类规则，default 沿用色板内嵌值", () => {
+  it("radius 档位：none/small/large 覆盖 lightVars.radius（:root 变量），default 沿用色板内嵌值", () => {
     const none = buildThemeCssText(themes, { color: "emerald", radius: "none" })
-    expect(none).toContain("body.radius-none")
     expect(none).toContain("--radius: 0")
 
     const small = buildThemeCssText(themes, { color: "emerald", radius: "small" })
-    expect(small).toContain("body.radius-small")
     expect(small).toContain("--radius: 0.45rem")
 
     const large = buildThemeCssText(themes, { color: "emerald", radius: "large" })
-    expect(large).toContain("body.radius-large")
     expect(large).toContain("--radius: 0.875rem")
 
     const dflt = buildThemeCssText(themes, {
       color: "emerald",
       radius: "default",
     })
-    expect(dflt).not.toContain("body.radius-")
+    // default：沿用色板内嵌 radius（0.625rem）
+    expect(dflt).toContain("--radius: 0.625rem")
+  })
+
+  it("chartColor：chart-1~5 用图表色的 chart-* 值覆盖", () => {
+    const emerald = buildThemeCssText(themes, { color: "neutral" })
+    const withChart = buildThemeCssText(themes, {
+      color: "neutral",
+      chartColor: "violet",
+    })
+    // neutral 的 chart-1 与 violet 的 chart-1 不同
+    expect(withChart).not.toBe(emerald)
+    expect(withChart).toContain("--color-chart-1: oklch")
+    // 主色不受影响（仍是 neutral）
+    expect(withChart).toContain("--color-primary: oklch(0.205 0 0)")
+  })
+
+  it("menuAccent=bold：accent/accent-foreground 变换为 primary 系（v4 语义）", () => {
+    const subtle = buildThemeCssText(themes, { color: "emerald" })
+    const bold = buildThemeCssText(themes, {
+      color: "emerald",
+      menuAccent: "bold",
+    })
+    expect(subtle).toContain("--color-accent: oklch")
+    expect(bold).not.toBe(subtle)
+    // bold 下 accent = primary
+    const primary = subtle.match(/--color-primary: ([^;]+)/)?.[1]
+    expect(bold).toContain(`--color-accent: ${primary}`)
   })
 
   it("chart/sidebar 变量输出（32 键全量）", () => {

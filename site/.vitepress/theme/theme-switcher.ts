@@ -2,8 +2,11 @@
 //   - 视觉风格：8 套官方样式（v4 registry/styles，body.style-<name> 作用域）
 //   - 色板：24 色（v4 themes，buildThemeCssText 注入 --color-* 变量）
 //   - 基色：7 个中性基色（v4 baseColors，与色板合并）
+//   - 图表色：24 色（chart-1~5 覆盖，默认跟随色板）
 //   - 圆角：5 档（default/none/small/medium/large）
-//   - 明暗：html.dark
+//   - 字体：26 种（--font-sans）+ 标题字体（inherit + 26，--font-heading）
+//   - 菜单强调：subtle / bold；菜单色：default/inverted/translucent 系
+//   - 指针：cursor pointer；缩放：80-120%；RTL 方向
 //   - localStorage 持久化
 // 默认组合对齐 shadcn 官方：neutral 色板（黑 primary）+ neutral 基色
 import { buildThemeCssText } from "@/registry/bases/base/lib/theme"
@@ -24,10 +27,32 @@ export type StyleName = (typeof STYLE_NAMES)[number]
 export const RADII = ["default", "none", "small", "medium", "large"] as const
 export type RadiusName = (typeof RADII)[number]
 
+export const MENU_ACCENTS = ["subtle", "bold"] as const
+export type MenuAccent = (typeof MENU_ACCENTS)[number]
+
+export const MENU_COLORS = [
+  "default",
+  "inverted",
+  "default-translucent",
+  "inverted-translucent",
+] as const
+export type MenuColor = (typeof MENU_COLORS)[number]
+
+export const SIZES = [80, 90, 100, 110, 120] as const
+export type SizeValue = (typeof SIZES)[number]
+
 const DEFAULT_STYLE: StyleName = "luma"
 const DEFAULT_PALETTE = "neutral"
 const DEFAULT_BASE_COLOR = "neutral"
 const DEFAULT_RADIUS: RadiusName = "default"
+const DEFAULT_FONT = "inter"
+const DEFAULT_FONT_HEADING = "inherit"
+const DEFAULT_CHART_COLOR = "follow"
+const DEFAULT_MENU_ACCENT: MenuAccent = "subtle"
+const DEFAULT_MENU_COLOR: MenuColor = "default"
+const DEFAULT_POINTER = false
+const DEFAULT_SIZE: SizeValue = 100
+const DEFAULT_RTL = false
 
 // 24 色板（v4 themes 顺序），swatch 取色板 light.primary
 const ALL_PALETTES = Object.entries(themes.themes).map(([name, palette]) => ({
@@ -44,11 +69,26 @@ type PaletteName = (typeof ALL_PALETTES)[number]["name"]
 
 const BASE_COLORS = Object.keys(themes.baseColors)
 
+// 26 种字体（v4 font-definitions，themes.json.fonts）
+type FontDef = { name: string; title: string; type: string; family: string; import: string }
+const ALL_FONTS: FontDef[] = (themes as { fonts?: FontDef[] }).fonts ?? []
+export const FONTS = ALL_FONTS.filter((f) => f.type !== "mono")
+export const MONO_FONTS = ALL_FONTS.filter((f) => f.type === "mono")
+export const FONT_HEADING_VALUES = ["inherit", ...ALL_FONTS.map((f) => f.name)] as const
+
 interface Prefs {
   style: StyleName
   palette: PaletteName
   baseColor: string
+  chartColor: string
   radius: RadiusName
+  font: string
+  fontHeading: string
+  menuAccent: MenuAccent
+  menuColor: MenuColor
+  pointer: boolean
+  size: SizeValue
+  rtl: boolean
   dark: boolean
 }
 
@@ -59,7 +99,15 @@ function fallbackPrefs(): Prefs {
     style: DEFAULT_STYLE,
     palette: DEFAULT_PALETTE,
     baseColor: DEFAULT_BASE_COLOR,
+    chartColor: DEFAULT_CHART_COLOR,
     radius: DEFAULT_RADIUS,
+    font: DEFAULT_FONT,
+    fontHeading: DEFAULT_FONT_HEADING,
+    menuAccent: DEFAULT_MENU_ACCENT,
+    menuColor: DEFAULT_MENU_COLOR,
+    pointer: DEFAULT_POINTER,
+    size: DEFAULT_SIZE,
+    rtl: DEFAULT_RTL,
     dark: false,
   }
 }
@@ -78,7 +126,27 @@ function loadPrefs(): Prefs {
         baseColor: BASE_COLORS.includes(parsed.baseColor)
           ? parsed.baseColor
           : DEFAULT_BASE_COLOR,
+        chartColor:
+          parsed.chartColor === "follow" ||
+          ALL_PALETTES.some((p) => p.name === parsed.chartColor)
+            ? parsed.chartColor
+            : DEFAULT_CHART_COLOR,
         radius: RADII.includes(parsed.radius) ? parsed.radius : DEFAULT_RADIUS,
+        font: ALL_FONTS.some((f) => f.name === parsed.font)
+          ? parsed.font
+          : DEFAULT_FONT,
+        fontHeading: FONT_HEADING_VALUES.includes(parsed.fontHeading)
+          ? parsed.fontHeading
+          : DEFAULT_FONT_HEADING,
+        menuAccent: MENU_ACCENTS.includes(parsed.menuAccent)
+          ? parsed.menuAccent
+          : DEFAULT_MENU_ACCENT,
+        menuColor: MENU_COLORS.includes(parsed.menuColor)
+          ? parsed.menuColor
+          : DEFAULT_MENU_COLOR,
+        pointer: Boolean(parsed.pointer),
+        size: SIZES.includes(parsed.size) ? parsed.size : DEFAULT_SIZE,
+        rtl: Boolean(parsed.rtl),
         dark: Boolean(parsed.dark),
       }
     }
@@ -97,6 +165,12 @@ function savePrefs(prefs: Prefs): void {
 }
 
 let paletteStyleEl: HTMLStyleElement | null = null
+let pointerStyleEl: HTMLStyleElement | null = null
+let fontLinkEl: HTMLLinkElement | null = null
+let fontHeadingLinkEl: HTMLLinkElement | null = null
+
+const POINTER_CURSOR_SELECTOR =
+  'button:not(:disabled), [role="button"]:not(:disabled)'
 
 function applyThemeVars(prefs: Prefs): void {
   if (!paletteStyleEl) {
@@ -107,6 +181,8 @@ function applyThemeVars(prefs: Prefs): void {
   paletteStyleEl.textContent = buildThemeCssText(themes, {
     color: prefs.palette,
     baseColor: prefs.baseColor,
+    chartColor: prefs.chartColor === "follow" ? undefined : prefs.chartColor,
+    menuAccent: prefs.menuAccent,
     radius: prefs.radius,
   })
   document.documentElement.classList.toggle("dark", prefs.dark)
@@ -117,9 +193,94 @@ function applyStyle(name: StyleName): void {
   document.body.classList.add(`style-${name}`)
 }
 
+/** 加载 Google Fonts 并设置 --font-sans / --font-heading（v4 语义） */
+function applyFonts(prefs: Prefs): void {
+  const doc = document.documentElement
+  const setFontVar = (
+    linkRef: { current: HTMLLinkElement | null },
+    varName: string,
+    fontName: string | null
+  ) => {
+    if (!fontName) {
+      doc.style.removeProperty(varName)
+      return
+    }
+    const font = ALL_FONTS.find((f) => f.name === fontName)
+    if (!font) {
+      doc.style.removeProperty(varName)
+      return
+    }
+    // 动态加载字体（Google Fonts CSS2；失败时回退系统字体）
+    const importName = font.import.replace(/_/g, " ")
+    const url = `https://fonts.googleapis.com/css2?family=${importName.replace(/ /g, "+")}:wght@400;500;600;700;800&display=swap`
+    if (!linkRef.current || linkRef.current.href !== url) {
+      const link = document.createElement("link")
+      link.rel = "stylesheet"
+      link.href = url
+      document.head.appendChild(link)
+      linkRef.current = link
+    }
+    doc.style.setProperty(varName, font.family)
+  }
+
+  setFontVar({ current: fontLinkEl }, "--font-sans", prefs.font)
+  const heading =
+    prefs.fontHeading === "inherit" ? prefs.font : prefs.fontHeading
+  setFontVar({ current: fontHeadingLinkEl }, "--font-heading", heading)
+  // mono 字体族不变
+}
+
+function applyPointer(pointer: boolean): void {
+  if (pointer) {
+    if (!pointerStyleEl) {
+      pointerStyleEl = document.createElement("style")
+      pointerStyleEl.setAttribute("data-actview-ui-pointer", "1")
+      document.head.appendChild(pointerStyleEl)
+    }
+    pointerStyleEl.textContent = `@layer base {\n  ${POINTER_CURSOR_SELECTOR} {\n    cursor: pointer;\n  }\n}\n`
+  } else {
+    pointerStyleEl?.remove()
+    pointerStyleEl = null
+  }
+}
+
+function applySize(size: SizeValue): void {
+  document.documentElement.style.fontSize = `${size}%`
+}
+
+function applyRtl(rtl: boolean): void {
+  document.documentElement.dir = rtl ? "rtl" : "ltr"
+}
+
+/** 菜单色：.cn-menu-target 元素加/减 dark（inverted）与 translucent class（v4 语义） */
+function applyMenuColor(menuColor: MenuColor): void {
+  const isInverted = menuColor === "inverted" || menuColor === "inverted-translucent"
+  const isTranslucent =
+    menuColor === "default-translucent" || menuColor === "inverted-translucent"
+  for (const el of Array.from(
+    document.querySelectorAll<HTMLElement>(
+      ".cn-menu-target, [data-menu-translucent]"
+    )
+  )) {
+    el.classList.toggle("dark", isInverted)
+    if (isTranslucent) {
+      el.classList.add("cn-menu-translucent")
+      el.removeAttribute("data-menu-translucent")
+    } else if (el.classList.contains("cn-menu-translucent")) {
+      el.classList.remove("cn-menu-translucent")
+      el.setAttribute("data-menu-translucent", "")
+    }
+  }
+}
+
 function applyAll(prefs: Prefs): void {
   applyStyle(prefs.style)
   applyThemeVars(prefs)
+  applyFonts(prefs)
+  applyPointer(prefs.pointer)
+  applySize(prefs.size)
+  applyRtl(prefs.rtl)
+  applyMenuColor(prefs.menuColor)
 }
 
 function setActive(container: HTMLElement, value: string): void {
@@ -171,6 +332,25 @@ function buildSwatch(
   return btn
 }
 
+function buildSelect(
+  values: readonly string[],
+  labels: Record<string, string>,
+  current: string,
+  onChange: (value: string) => void
+): HTMLSelectElement {
+  const select = document.createElement("select")
+  select.className = "actview-ui-switcher-select"
+  for (const value of values) {
+    const option = document.createElement("option")
+    option.value = value
+    option.textContent = labels[value] ?? value
+    option.selected = value === current
+    select.appendChild(option)
+  }
+  select.addEventListener("change", () => onChange(select.value))
+  return select
+}
+
 function describePrefs(p: Prefs): string {
   return `${p.style} · ${p.palette}${p.baseColor !== "neutral" ? `+${p.baseColor}` : ""} · r=${p.radius} · ${p.dark ? "dark" : "light"}`
 }
@@ -203,8 +383,16 @@ function buildPanel(prefs: Prefs): HTMLElement {
     setActive(paletteRow, prefs.palette)
     setActive(paletteRow2, prefs.palette)
     setActive(baseRow, prefs.baseColor)
+    setActive(chartRow, prefs.chartColor)
     setActive(radiusRow, prefs.radius)
+    setActive(accentRow, prefs.menuAccent)
+    setActive(menuRow, prefs.menuColor)
+    setActive(pointerRow, prefs.pointer ? "on" : "off")
+    setActive(sizeRow, String(prefs.size))
+    setActive(rtlRow, prefs.rtl ? "rtl" : "ltr")
     setActive(themeRow, prefs.dark ? "dark" : "light")
+    fontSelect.value = prefs.font
+    headingSelect.value = prefs.fontHeading
     summary.textContent = describePrefs(prefs)
   })
   title.appendChild(resetBtn)
@@ -285,6 +473,31 @@ function buildPanel(prefs: Prefs): HTMLElement {
   }
   panel.appendChild(baseRow)
 
+  // 图表色（24，默认跟随色板）
+  panel.appendChild(buildLabel("图表色"))
+  const chartRow = buildRow()
+  chartRow.appendChild(
+    buildButton("follow", "跟随", () => {
+      prefs.chartColor = "follow"
+      applyThemeVars(prefs)
+      savePrefs(prefs)
+      setActive(chartRow, "follow")
+      summary.textContent = describePrefs(prefs)
+    })
+  )
+  for (const p of ALL_PALETTES) {
+    chartRow.appendChild(
+      buildSwatch(p.name, `图表 ${p.label}`, p.swatch, () => {
+        prefs.chartColor = p.name
+        applyThemeVars(prefs)
+        savePrefs(prefs)
+        setActive(chartRow, p.name)
+        summary.textContent = describePrefs(prefs)
+      })
+    )
+  }
+  panel.appendChild(chartRow)
+
   // 圆角（5 档）
   panel.appendChild(buildLabel("圆角"))
   const radiusRow = buildRow()
@@ -301,7 +514,125 @@ function buildPanel(prefs: Prefs): HTMLElement {
   }
   panel.appendChild(radiusRow)
 
-  // 明暗
+  // 字体（26）+ 标题字体
+  panel.appendChild(buildLabel("字体"))
+  const fontLabels: Record<string, string> = {}
+  for (const f of ALL_FONTS) fontLabels[f.name] = f.title
+  const fontSelect = buildSelect(
+    ALL_FONTS.map((f) => f.name),
+    fontLabels,
+    prefs.font,
+    (value) => {
+      prefs.font = value
+      applyFonts(prefs)
+      savePrefs(prefs)
+      summary.textContent = describePrefs(prefs)
+    }
+  )
+  panel.appendChild(fontSelect)
+  panel.appendChild(buildLabel("标题字体"))
+  const headingLabels: Record<string, string> = { inherit: "跟随正文" }
+  for (const f of ALL_FONTS) headingLabels[f.name] = f.title
+  const headingSelect = buildSelect(
+    FONT_HEADING_VALUES,
+    headingLabels,
+    prefs.fontHeading,
+    (value) => {
+      prefs.fontHeading = value
+      applyFonts(prefs)
+      savePrefs(prefs)
+      summary.textContent = describePrefs(prefs)
+    }
+  )
+  panel.appendChild(headingSelect)
+
+  // 菜单强调
+  panel.appendChild(buildLabel("菜单强调"))
+  const accentRow = buildRow()
+  for (const name of MENU_ACCENTS) {
+    accentRow.appendChild(
+      buildButton(name, name.charAt(0).toUpperCase() + name.slice(1), () => {
+        prefs.menuAccent = name
+        applyThemeVars(prefs)
+        savePrefs(prefs)
+        setActive(accentRow, name)
+        summary.textContent = describePrefs(prefs)
+      })
+    )
+  }
+  panel.appendChild(accentRow)
+
+  // 菜单色
+  panel.appendChild(buildLabel("菜单色"))
+  const menuRow = buildRow()
+  for (const name of MENU_COLORS) {
+    menuRow.appendChild(
+      buildButton(name, name, () => {
+        prefs.menuColor = name
+        applyMenuColor(name)
+        savePrefs(prefs)
+        setActive(menuRow, name)
+        summary.textContent = describePrefs(prefs)
+      })
+    )
+  }
+  panel.appendChild(menuRow)
+
+  // 指针 / 缩放 / RTL / 明暗
+  panel.appendChild(buildLabel("指针"))
+  const pointerRow = buildRow()
+  pointerRow.appendChild(
+    buildButton("on", "开", () => {
+      prefs.pointer = true
+      applyPointer(true)
+      savePrefs(prefs)
+      setActive(pointerRow, "on")
+    })
+  )
+  pointerRow.appendChild(
+    buildButton("off", "关", () => {
+      prefs.pointer = false
+      applyPointer(false)
+      savePrefs(prefs)
+      setActive(pointerRow, "off")
+    })
+  )
+  panel.appendChild(pointerRow)
+
+  panel.appendChild(buildLabel("缩放"))
+  const sizeRow = buildRow()
+  for (const size of SIZES) {
+    sizeRow.appendChild(
+      buildButton(String(size), `${size}%`, () => {
+        prefs.size = size
+        applySize(size)
+        savePrefs(prefs)
+        setActive(sizeRow, String(size))
+      })
+    )
+  }
+  panel.appendChild(sizeRow)
+
+  panel.appendChild(buildLabel("方向"))
+  const rtlRow = buildRow()
+  rtlRow.appendChild(
+    buildButton("ltr", "LTR", () => {
+      prefs.rtl = false
+      applyRtl(false)
+      savePrefs(prefs)
+      setActive(rtlRow, "ltr")
+    })
+  )
+  rtlRow.appendChild(
+    buildButton("rtl", "RTL", () => {
+      prefs.rtl = true
+      applyRtl(true)
+      savePrefs(prefs)
+      setActive(rtlRow, "rtl")
+    })
+  )
+  panel.appendChild(rtlRow)
+
   panel.appendChild(buildLabel("模式"))
   const themeRow = buildRow()
   themeRow.appendChild(
@@ -329,7 +660,13 @@ function buildPanel(prefs: Prefs): HTMLElement {
   setActive(paletteRow, prefs.palette)
   setActive(paletteRow2, prefs.palette)
   setActive(baseRow, prefs.baseColor)
+  setActive(chartRow, prefs.chartColor)
   setActive(radiusRow, prefs.radius)
+  setActive(accentRow, prefs.menuAccent)
+  setActive(menuRow, prefs.menuColor)
+  setActive(pointerRow, prefs.pointer ? "on" : "off")
+  setActive(sizeRow, String(prefs.size))
+  setActive(rtlRow, prefs.rtl ? "rtl" : "ltr")
   setActive(themeRow, prefs.dark ? "dark" : "light")
 
   return panel
